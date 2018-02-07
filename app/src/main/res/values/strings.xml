@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MaterialTimer</string>
+    <string name="StartButtonDescription">Start Timer</string>
+    <string name="TextViewPlaceholder">30</string>
 </resources>
