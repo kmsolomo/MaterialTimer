@@ -2,7 +2,8 @@
 <set xmlns:android="http://schemas.android.com/apk/res/android"
     android:fillAfter="true">
 
-    <scale
+    <objectAnimator
+        android:propertyName="scale"
         android:duration="250"
         android:fromXScale="0.0"
         android:fromYScale="0.0"
@@ -11,6 +12,7 @@
         android:pivotY="50%"
         android:startOffset="500"
         android:toXScale="1.0"
-        android:toYScale="1.0" />
+        android:toYScale="1.0">
+    </objectAnimator>
 
 </set>

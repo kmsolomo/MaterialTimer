@@ -1,10 +1,13 @@
 package com.example.admin.materialtimer;
 
+import android.animation.ObjectAnimator;
 import android.os.CountDownTimer;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity{
@@ -12,6 +15,7 @@ public class MainActivity extends AppCompatActivity{
     private FloatingActionButton controlButton;
     private TextView timerView;
     private int clickControl;
+    private Animation growAnimation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +30,7 @@ public class MainActivity extends AppCompatActivity{
         //take from settings
         timerView.setText("30");
         controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
-
+        growAnimation = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.action_button);
 
 
         final CountDownTimer firstTimer = new CountDownTimer(30000, 1000) {
@@ -61,6 +65,7 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(View view) {
 
+                controlButton.startAnimation(growAnimation);
 
                 if(clickControl == 1){
                     controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
