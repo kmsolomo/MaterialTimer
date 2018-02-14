@@ -38,6 +38,6 @@
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/control_buttton" />
+        app:srcCompat="@drawable/control_buttton" android:focusable="true"/>
 
 </android.support.constraint.ConstraintLayout>
