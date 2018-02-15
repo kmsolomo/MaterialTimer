@@ -1,37 +1,34 @@
 package com.example.admin.materialtimer;
 
-import android.animation.Animator;
-import android.animation.AnimatorInflater;
+import android.content.Intent;
 import android.os.CountDownTimer;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity{
 
     private FloatingActionButton controlButton;
+    private ImageButton settingsButton;
     private TextView timerView;
     private int clickControl;
-    private Animator growAnimation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        clickControl = 0;
         controlButton = findViewById(R.id.floatingActionButton);
         timerView = findViewById(R.id.timerTextView);
-        clickControl = 0;
-
+        settingsButton = findViewById(R.id.imageButton);
 
         //initialize default values
         timerView.setText("30");
         controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
-        growAnimation = AnimatorInflater.loadAnimator(getApplicationContext(),R.animator.image_transition);
-        growAnimation.setTarget(controlButton);
-
 
         //Create Work Timer
         final CountDownTimer firstTimer = new CountDownTimer(30000, 1000) {
@@ -63,12 +60,10 @@ public class MainActivity extends AppCompatActivity{
             }
         };
 
-        //Listen for user interaction
+        //Floating action button
         controlButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                growAnimation.start();
 
                 if(clickControl == 1){
                     controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
@@ -78,9 +73,15 @@ public class MainActivity extends AppCompatActivity{
                     controlButton.setImageResource(R.drawable.ic_pause_44dp);
                     clickControl = 1;
                 }
+            }
+        });
 
-                //firstTimer.start();
-                //secondTimer.start();
+        //Settings Button
+        settingsButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                Intent i = new Intent(MainActivity.this,SettingsActivity.class);
+                startActivity(i);
             }
         });
 
