@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    android:background="@color/colorPrimaryDark"
     <PreferenceCategory
         android:title="General"
         android:key="pref_key_storage_settings">
@@ -8,6 +7,7 @@
             android:title="Theme"
             android:summary="CurrentColor"
             android:entries="@array/Themes"
+            android:entryValues="@array/Themes"
             android:key="theme_values">
         </ListPreference>
     </PreferenceCategory>

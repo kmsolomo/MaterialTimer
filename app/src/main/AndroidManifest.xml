@@ -18,7 +18,8 @@
         <activity
             android:name=".SettingsActivity"
             android:label="Settings"
-            />
+            android:background="@color/colorPrimaryDark">
+        </activity>
     </application>
 
 </manifest>

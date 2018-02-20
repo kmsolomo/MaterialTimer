@@ -1,5 +1,7 @@
 package com.example.admin.materialtimer;
 
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
@@ -14,8 +16,9 @@ public class SettingsActivity extends PreferenceActivity{
     protected void onCreate(Bundle onSaveInstanceState){
         super.onCreate(onSaveInstanceState);
 
-
-
+        FragmentManager fragManager = getFragmentManager();
+        FragmentTransaction fragTransaction = fragManager.beginTransaction();
+        fragTransaction.replace(android.R.id.content,new SettingsFragment()).commit();
     }
 
     public static class SettingsFragment extends PreferenceFragment{
