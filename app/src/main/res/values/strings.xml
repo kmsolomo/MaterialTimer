@@ -3,4 +3,11 @@
     <string name="StartButtonDescription">Start Timer</string>
     <string name="TextViewPlaceholder">30</string>
     <string name="Settings">Settings</string>
+
+    <string-array name="Themes">
+        <item>Light</item>
+        <item>Dark</item>
+        <item>Black</item>
+    </string-array>
+
 </resources>
