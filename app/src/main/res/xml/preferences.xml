@@ -12,6 +12,18 @@
         </ListPreference>
     </PreferenceCategory>
     <PreferenceCategory
+        android:title="Main Profile">
+        <SeekBarPreference
+            android:title="Work">
+        </SeekBarPreference>
+        <SeekBarPreference
+            android:title="Break">
+        </SeekBarPreference>
+        <SeekBarPreference
+            android:title="Long Break">
+        </SeekBarPreference>
+    </PreferenceCategory>
+    <PreferenceCategory
         android:title="Timer"
         android:key="pref_key_storage2_settings">
         <CheckBoxPreference
