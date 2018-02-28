@@ -8,30 +8,37 @@
             android:summary="CurrentColor"
             android:entries="@array/Themes"
             android:entryValues="@array/Themes"
-            android:key="theme_values">
+            android:key="pref_theme_value">
         </ListPreference>
     </PreferenceCategory>
     <PreferenceCategory
-        android:title="Main Profile">
+        android:title="Timer Profile">
         <SeekBarPreference
-            android:title="Work">
+            android:title="Work"
+            android:key="pref_work_time">
         </SeekBarPreference>
         <SeekBarPreference
-            android:title="Break">
+            android:title="Break"
+            android:key="pref_break_time">
         </SeekBarPreference>
         <SeekBarPreference
-            android:title="Long Break">
+            android:title="Long Break"
+            android:key="pref_long_break_time">
+        </SeekBarPreference>
+        <SeekBarPreference
+            android:title="Loop until long break"
+            android:key="pref_loop_amount">
         </SeekBarPreference>
     </PreferenceCategory>
     <PreferenceCategory
-        android:title="Timer"
-        android:key="pref_key_storage2_settings">
+        android:title="Sound">
         <CheckBoxPreference
             android:title="Testing"
             android:summary="testing the summary">
         </CheckBoxPreference>
         <SwitchPreference
-            android:title="Vibrate">
+            android:title="Vibrate"
+            android:key="pref_vibrate">
         </SwitchPreference>
     </PreferenceCategory>
 </PreferenceScreen>
