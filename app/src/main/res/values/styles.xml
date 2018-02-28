@@ -8,11 +8,13 @@
     </style>
 
     <style name="SettingsTheme">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:colorPrimary">@color/colorPrimary</item>
+        <item name="android:colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="android:colorAccent">@color/colorAccent</item>
         <item name="android:windowActionBar">true</item>
         <item name="android:background">@color/colorPrimaryDark</item>
+        <item name="android:textColor">@color/textLightPrimary</item>
+        <item name="android:textColorSecondary">@color/textLightSecondary</item>
     </style>
 
 </resources>
