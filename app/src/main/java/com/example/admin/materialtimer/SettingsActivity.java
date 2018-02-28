@@ -7,7 +7,7 @@ import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.view.MenuItem;
-import android.view.Window;
+
 
 /**
  * Created by admin on 2/14/18.

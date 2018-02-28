@@ -41,4 +41,37 @@
             android:key="pref_vibrate">
         </SwitchPreference>
     </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Sound">
+        <CheckBoxPreference
+            android:title="Testing"
+            android:summary="testing the summary">
+        </CheckBoxPreference>
+        <SwitchPreference
+            android:title="Vibrate"
+            android:key="pref_vibrate">
+        </SwitchPreference>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Sound">
+        <CheckBoxPreference
+            android:title="Testing"
+            android:summary="testing the summary">
+        </CheckBoxPreference>
+        <SwitchPreference
+            android:title="Vibrate"
+            android:key="pref_vibrate">
+        </SwitchPreference>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Sound">
+        <CheckBoxPreference
+            android:title="Testing"
+            android:summary="testing the summary">
+        </CheckBoxPreference>
+        <SwitchPreference
+            android:title="Vibrate"
+            android:key="pref_vibrate">
+        </SwitchPreference>
+    </PreferenceCategory>
 </PreferenceScreen>

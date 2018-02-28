@@ -18,8 +18,7 @@
         <activity
             android:name=".SettingsActivity"
             android:label="Settings"
-            android:theme="@style/SettingsTheme"
-            android:background="@color/colorPrimaryDark">
+            android:theme="@style/SettingsTheme">
         </activity>
     </application>
 
