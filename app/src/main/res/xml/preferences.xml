@@ -1,77 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
     <PreferenceCategory
-        android:title="General"
-        android:key="pref_key_storage_settings">
+        android:title="General">
         <ListPreference
             android:title="Theme"
             android:summary="CurrentColor"
             android:entries="@array/Themes"
             android:entryValues="@array/Themes"
-            android:key="pref_theme_value">
-        </ListPreference>
+            android:key="pref_theme_value"/>
     </PreferenceCategory>
+
     <PreferenceCategory
         android:title="Timer Profile">
-        <SeekBarPreference
-            android:title="Work"
-            android:key="pref_work_time">
-        </SeekBarPreference>
-        <SeekBarPreference
-            android:title="Break"
-            android:key="pref_break_time">
-        </SeekBarPreference>
-        <SeekBarPreference
-            android:title="Long Break"
-            android:key="pref_long_break_time">
-        </SeekBarPreference>
-        <SeekBarPreference
-            android:title="Loop until long break"
-            android:key="pref_loop_amount">
-        </SeekBarPreference>
+        <ListPreference
+            android:title="Work Time"
+            android:entries="@array/WorkTime"
+            android:entryValues="@array/WorkTime"
+            android:key="pref_work_time"/>
+        <ListPreference
+            android:title="Break Time"
+            android:entries="@array/BreakTime"
+            android:entryValues="@array/BreakTime"
+            android:key="pref_break_time"/>
+        <ListPreference
+            android:title="Long Break Time"
+            android:entries="@array/BreakTime"
+            android:entryValues="@array/BreakTime"
+            android:key="pref_long_break_time"/>
+        <ListPreference
+            android:title="Loops until long break"
+            android:entries="@array/LoopAmount"
+            android:entryValues="@array/LoopAmount"
+            android:key="pref_loop_amount"/>
     </PreferenceCategory>
+
     <PreferenceCategory
         android:title="Sound">
-        <CheckBoxPreference
-            android:title="Testing"
-            android:summary="testing the summary">
-        </CheckBoxPreference>
         <SwitchPreference
             android:title="Vibrate"
-            android:key="pref_vibrate">
-        </SwitchPreference>
+            android:key="pref_vibrate"/>
     </PreferenceCategory>
-    <PreferenceCategory
-        android:title="Sound">
-        <CheckBoxPreference
-            android:title="Testing"
-            android:summary="testing the summary">
-        </CheckBoxPreference>
-        <SwitchPreference
-            android:title="Vibrate"
-            android:key="pref_vibrate">
-        </SwitchPreference>
-    </PreferenceCategory>
-    <PreferenceCategory
-        android:title="Sound">
-        <CheckBoxPreference
-            android:title="Testing"
-            android:summary="testing the summary">
-        </CheckBoxPreference>
-        <SwitchPreference
-            android:title="Vibrate"
-            android:key="pref_vibrate">
-        </SwitchPreference>
-    </PreferenceCategory>
-    <PreferenceCategory
-        android:title="Sound">
-        <CheckBoxPreference
-            android:title="Testing"
-            android:summary="testing the summary">
-        </CheckBoxPreference>
-        <SwitchPreference
-            android:title="Vibrate"
-            android:key="pref_vibrate">
-        </SwitchPreference>
-    </PreferenceCategory>
+
 </PreferenceScreen>
