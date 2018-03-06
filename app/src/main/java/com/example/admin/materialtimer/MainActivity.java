@@ -1,7 +1,9 @@
 package com.example.admin.materialtimer;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.CountDownTimer;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,13 +23,20 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Bind Views
         clickControl = 0;
         controlButton = findViewById(R.id.floatingActionButton);
         timerView = findViewById(R.id.timerTextView);
         settingsButton = findViewById(R.id.imageButton);
 
+        //Set Default Preferences
+        PreferenceManager.setDefaultValues(this,R.xml.preferences,false);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        String timerVal = sharedPref.getString("pref_work_time","");
+
+
         //initialize default values
-        timerView.setText("30");
+        timerView.setText(timerVal);
         controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
 
         //Create Work Timer

@@ -8,7 +8,8 @@
             android:summary="CurrentColor"
             android:entries="@array/Themes"
             android:entryValues="@array/Themes"
-            android:key="pref_theme_value"/>
+            android:key="pref_theme_value"
+            android:defaultValue="@string/themeDefaultValue"/>
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -17,29 +18,34 @@
             android:title="Work Time"
             android:entries="@array/WorkTime"
             android:entryValues="@array/WorkTime"
-            android:key="pref_work_time"/>
+            android:key="pref_work_time"
+            android:defaultValue="@integer/workTimeDefaultValue"/>
         <ListPreference
             android:title="Break Time"
             android:entries="@array/BreakTime"
             android:entryValues="@array/BreakTime"
-            android:key="pref_break_time"/>
+            android:key="pref_break_time"
+            android:defaultValue="@integer/breakTimeDefaultValue"/>
         <ListPreference
             android:title="Long Break Time"
             android:entries="@array/BreakTime"
             android:entryValues="@array/BreakTime"
-            android:key="pref_long_break_time"/>
+            android:key="pref_long_break_time"
+            android:defaultValue="@integer/longBreakTimeDefaultValue"/>
         <ListPreference
             android:title="Loops until long break"
             android:entries="@array/LoopAmount"
             android:entryValues="@array/LoopAmount"
-            android:key="pref_loop_amount"/>
+            android:key="pref_loop_amount"
+            android:defaultValue="@integer/loopAmountDefaultValue"/>
     </PreferenceCategory>
 
     <PreferenceCategory
         android:title="Sound">
         <SwitchPreference
             android:title="Vibrate"
-            android:key="pref_vibrate"/>
+            android:key="pref_vibrate"
+            android:defaultValue="@bool/vibrateDefaultValue"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

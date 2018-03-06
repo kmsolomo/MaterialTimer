@@ -4,6 +4,15 @@
     <string name="TextViewPlaceholder">30</string>
     <string name="Settings">Settings</string>
 
+
+    <!-- Settings Default Values -->
+    <string name="themeDefaultValue">Light</string>
+    <integer name="workTimeDefaultValue">25</integer>
+    <integer name="breakTimeDefaultValue">5</integer>
+    <integer name="longBreakTimeDefaultValue">15</integer>
+    <integer name="loopAmountDefaultValue">2</integer>
+    <bool name="vibrateDefaultValue">false</bool>
+
     <string-array name="Themes">
         <item>Light</item>
         <item>Dark</item>
