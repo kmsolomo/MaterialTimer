@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- Light -->
+    <color name="colorLightPrimary">#FAFAFA</color>
+    <color name="colorLightPrimaryDark">#E0E0E0</color>
+    <color name="textColorLight">#9E9E9E</color>
+
+
+    <!-- Dark -->
     <color name="colorPrimary">#9E9E9E</color>
     <color name="colorPrimaryDark">#616161</color>
     <color name="colorAccent">#009688</color>
     <color name="textLightPrimary">#deffffff</color>
     <color name="textLightSecondary">#61ffffff</color>
+
 </resources>
