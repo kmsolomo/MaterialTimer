@@ -15,28 +15,20 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColor">@color/textColorDarkPrimary</item>
         <item name="android:windowBackground">@color/colorDarkPrimaryDark</item>
-        <item name="android:statusBarColor">@color/colorBlackPimary</item>
+        <item name="android:statusBarColor">@color/colorBlackPrimary</item>
     </style>
 
     <style name="BlackAppTheme" parent="Theme.Design.NoActionBar">
-        <item name="colorPrimary">@color/colorBlackPimary</item>
-        <item name="colorPrimaryDark">@color/colorBlackPimary</item>
+        <item name="colorPrimary">@color/colorBlackPrimary</item>
+        <item name="colorPrimaryDark">@color/colorBlackPrimary</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColor">@color/textColorDarkPrimary</item>
-        <item name="android:windowBackground">@color/colorBlackPimary</item>
-        <item name="android:statusBarColor">@color/colorBlackPimary</item>
+        <item name="android:windowBackground">@color/colorBlackPrimary</item>
+        <item name="android:statusBarColor">@color/colorBlackPrimary</item>
     </style>
 
-    <!--
-    <style name="SettingsTheme">
-        <item name="android:colorPrimary">@color/colorPrimary</item>
-        <item name="android:colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="android:colorAccent">@color/colorAccent</item>
+    <style name="SettingsTheme" parent="BlackAppTheme">
         <item name="android:windowActionBar">true</item>
-        <item name="android:background">@color/colorPrimaryDark</item>
-        <item name="android:textColor">@color/textLightPrimary</item>
-        <item name="android:textColorSecondary">@color/textLightSecondary</item>
-        <item name="android:textColorAlertDialogListItem">@color/textLightPrimary</item>
-    </style>-->
+    </style>-
 
 </resources>

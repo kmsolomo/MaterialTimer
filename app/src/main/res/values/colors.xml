@@ -19,5 +19,5 @@
     <color name="textColorDarkSecondary">#61ffffff</color>
 
     <!-- Black -->
-    <color name="colorBlackPimary">#000000</color>
+    <color name="colorBlackPrimary">#000000</color>
 </resources>
