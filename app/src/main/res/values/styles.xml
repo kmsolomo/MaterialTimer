@@ -1,6 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Base application theme. -->
     <style name="LightAppTheme" parent="Theme.Design.NoActionBar">
         <item name="colorPrimary">@color/colorLightPrimary</item>
         <item name="colorPrimaryDark">@color/colorLightPrimaryDark</item>
@@ -9,7 +9,25 @@
         <item name="android:windowBackground">@color/colorLightPrimary</item>
     </style>
 
+    <style name="DarkAppTheme" parent="Theme.Design.NoActionBar">
+        <item name="colorPrimary">@color/colorDarkPrimary</item>
+        <item name="colorPrimaryDark">@color/colorDarkPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColor">@color/textColorDarkPrimary</item>
+        <item name="android:windowBackground">@color/colorDarkPrimaryDark</item>
+        <item name="android:statusBarColor">@color/colorBlackPimary</item>
+    </style>
 
+    <style name="BlackAppTheme" parent="Theme.Design.NoActionBar">
+        <item name="colorPrimary">@color/colorBlackPimary</item>
+        <item name="colorPrimaryDark">@color/colorBlackPimary</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColor">@color/textColorDarkPrimary</item>
+        <item name="android:windowBackground">@color/colorBlackPimary</item>
+        <item name="android:statusBarColor">@color/colorBlackPimary</item>
+    </style>
+
+    <!--
     <style name="SettingsTheme">
         <item name="android:colorPrimary">@color/colorPrimary</item>
         <item name="android:colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -19,6 +37,6 @@
         <item name="android:textColor">@color/textLightPrimary</item>
         <item name="android:textColorSecondary">@color/textLightSecondary</item>
         <item name="android:textColorAlertDialogListItem">@color/textLightPrimary</item>
-    </style>
+    </style>-->
 
 </resources>

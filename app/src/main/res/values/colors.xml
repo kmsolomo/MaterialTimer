@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Core -->
+    <color name="colorAccent">#009688</color>
+    <color name="colorIcon">#FFFFFF</color>
+
+
     <!-- Light -->
     <color name="colorLightPrimary">#FAFAFA</color>
     <color name="colorLightPrimaryDark">#E0E0E0</color>
@@ -8,10 +13,11 @@
 
 
     <!-- Dark -->
-    <color name="colorPrimary">#9E9E9E</color>
-    <color name="colorPrimaryDark">#616161</color>
-    <color name="colorAccent">#009688</color>
-    <color name="textLightPrimary">#deffffff</color>
-    <color name="textLightSecondary">#61ffffff</color>
+    <color name="colorDarkPrimary">#303030</color>
+    <color name="colorDarkPrimaryDark">#212121</color>
+    <color name="textColorDarkPrimary">#deffffff</color>
+    <color name="textColorDarkSecondary">#61ffffff</color>
 
+    <!-- Black -->
+    <color name="colorBlackPimary">#000000</color>
 </resources>
