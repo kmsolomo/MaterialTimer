@@ -1,6 +1,5 @@
 package com.example.admin.materialtimer;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 

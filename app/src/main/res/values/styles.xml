@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="LightAppTheme" parent="Theme.Design.NoActionBar">
+    <style name="LightAppTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/colorLightPrimary</item>
         <item name="colorPrimaryDark">@color/colorLightPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -9,7 +9,7 @@
         <item name="android:windowBackground">@color/colorLightPrimary</item>
     </style>
 
-    <style name="DarkAppTheme" parent="Theme.Design.NoActionBar">
+    <style name="DarkAppTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/colorDarkPrimary</item>
         <item name="colorPrimaryDark">@color/colorDarkPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -18,7 +18,7 @@
         <item name="android:statusBarColor">@color/colorBlackPrimary</item>
     </style>
 
-    <style name="BlackAppTheme" parent="Theme.Design.NoActionBar">
+    <style name="BlackAppTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/colorBlackPrimary</item>
         <item name="colorPrimaryDark">@color/colorBlackPrimary</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -26,9 +26,5 @@
         <item name="android:windowBackground">@color/colorBlackPrimary</item>
         <item name="android:statusBarColor">@color/colorBlackPrimary</item>
     </style>
-
-    <style name="SettingsTheme" parent="BlackAppTheme">
-        <item name="android:windowActionBar">true</item>
-    </style>-
 
 </resources>
