@@ -4,7 +4,6 @@
     <string name="TextViewPlaceholder">30</string>
     <string name="Settings">Settings</string>
 
-
     <!-- Settings Default Values -->
     <string name="themeDefaultValue">Light</string>
     <integer name="workTimeDefaultValue">25</integer>

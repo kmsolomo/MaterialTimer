@@ -1,9 +1,9 @@
 package com.example.admin.materialtimer;
 
-import android.app.Activity
+import android.os.Bundle;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.os.Bundle;
+import android.app.Activity;
 import android.view.MenuItem;
 import android.widget.Toolbar;
 
@@ -15,15 +15,18 @@ import android.widget.Toolbar;
 public class SettingsActivity extends Activity {
 
     Toolbar bar;
+    FragmentManager fragManager;
+    FragmentTransaction fragTransaction;
 
     @Override
     protected void onCreate(Bundle onSaveInstanceState){
 
         super.onCreate(onSaveInstanceState);
+        setContentView(R.layout.settings);
 
-        FragmentManager fragManager = getFragmentManager();
-        FragmentTransaction fragTransaction = fragManager.beginTransaction();
-        fragTransaction.replace(android.R.id.content,new SettingsFragment()).commit();
+        fragManager = getFragmentManager();
+        fragTransaction = fragManager.beginTransaction();
+        fragTransaction.replace(R.id.fragment_container, new SettingsFragment()).commit();
 
         bar = findViewById(R.id.toolbar);
         setActionBar(bar);
