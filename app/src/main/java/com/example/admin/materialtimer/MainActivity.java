@@ -30,7 +30,7 @@ public class MainActivity extends Activity{
         settingsButton = findViewById(R.id.imageButton);
 
         //Set Default Preferences
-        PreferenceManager.setDefaultValues(this,R.xml.preferences,false);
+        PreferenceManager.setDefaultValues(getApplicationContext(),R.xml.preferences,false);
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String timerVal = sharedPref.getString("pref_work_time","");
 

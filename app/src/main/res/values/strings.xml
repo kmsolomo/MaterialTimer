@@ -12,10 +12,15 @@
     <integer name="loopAmountDefaultValue">2</integer>
     <bool name="vibrateDefaultValue">false</bool>
 
+    <!-- Themes -->
+    <string name="LightTheme">Light</string>
+    <string name="DarkTheme">Dark</string>
+    <string name="BlackTheme">Black</string>
+
     <string-array name="Themes">
-        <item>Light</item>
-        <item>Dark</item>
-        <item>Black</item>
+        <item>@string/LightTheme</item>
+        <item>@string/DarkTheme</item>
+        <item>@string/BlackTheme</item>
     </string-array>
 
     <string-array name="WorkTime">
