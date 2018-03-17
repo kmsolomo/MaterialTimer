@@ -6,6 +6,7 @@
         <item name="colorPrimaryDark">@color/colorLightPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColor">@color/textColorLight</item>
+        <item name="android:alertDialogTheme">@style/lightDialogTheme</item>
         <item name="android:windowBackground">@color/colorLightPrimary</item>
     </style>
 
@@ -25,6 +26,11 @@
         <item name="android:textColor">@color/textColorDarkPrimary</item>
         <item name="android:windowBackground">@color/colorBlackPrimary</item>
         <item name="android:statusBarColor">@color/colorBlackPrimary</item>
+    </style>
+
+    <style name="lightDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:windowBackground">@color/colorLightDialogBackground</item>
+        <item name="android:textColor">@color/textColorLight</item>
     </style>
 
 </resources>

@@ -10,6 +10,7 @@
     <color name="colorLightPrimary">#FAFAFA</color>
     <color name="colorLightPrimaryDark">#E0E0E0</color>
     <color name="textColorLight">#9E9E9E</color>
+    <color name="colorLightDialogBackground">#FFFFFF</color>
 
 
     <!-- Dark -->

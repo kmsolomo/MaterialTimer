@@ -1,9 +1,11 @@
 package com.example.admin.materialtimer;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.Activity;
+import android.preference.PreferenceManager;
 import android.view.MenuItem;
 import android.widget.Toolbar;
 
@@ -12,16 +14,20 @@ import android.widget.Toolbar;
  * Created by admin on 2/14/18.
  */
 
-public class SettingsActivity extends Activity {
+public class SettingsActivity extends Activity implements SettingsFragment.OnThemeChangeListener{
 
     Toolbar bar;
     FragmentManager fragManager;
     FragmentTransaction fragTransaction;
+    SharedPreferences sharedPref;
+    String appTheme;
+    String themeKey = "pref_theme_value";
 
     @Override
     protected void onCreate(Bundle onSaveInstanceState){
 
         super.onCreate(onSaveInstanceState);
+        themeCheck();
         setContentView(R.layout.settings);
 
         fragManager = getFragmentManager();
@@ -42,4 +48,30 @@ public class SettingsActivity extends Activity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void onThemeChange(){
+        recreate();
+    }
+
+    public void themeCheck(){
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        appTheme = sharedPref.getString(themeKey,"Dark");
+
+        switch(appTheme){
+            case "Light":
+                setTheme(R.style.LightAppTheme);
+                break;
+            case "Dark":
+                setTheme(R.style.DarkAppTheme);
+                break;
+            case "Black":
+                setTheme(R.style.BlackAppTheme);
+                break;
+            default:
+                break;
+        }
+    }
+
+
 }
