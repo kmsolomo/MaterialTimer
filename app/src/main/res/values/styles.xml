@@ -1,14 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Light Theme -->
     <style name="LightAppTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/colorLightPrimary</item>
         <item name="colorPrimaryDark">@color/colorLightPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:textColor">@color/textColorLight</item>
-        <item name="android:alertDialogTheme">@style/lightDialogTheme</item>
+        <item name="android:textColor">@color/colorBlackPrimary</item>
+        <item name="android:textColorSecondary">@color/textColorLight</item>
+        <item name="android:alertDialogTheme">@style/LightDialogTheme</item>
+        <item name="android:listSeparatorTextViewStyle">@style/ListSeparatorLightColor</item>
         <item name="android:windowBackground">@color/colorLightPrimary</item>
     </style>
+
+    <style name="LightDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:windowBackground">@color/colorLightPrimary</item>
+        <item name="android:textColor">@color/colorBlackPrimary</item>
+    </style>
+
+    <style name="ListSeparatorLightColor" >
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:divider">@color/textColorLight</item>
+        <item name="android:dividerHeight">1dp</item>
+        <item name="android:listDivider">@color/colorBlackPrimary</item>
+    </style>
+
+    <!-- Dark Theme -->
 
     <style name="DarkAppTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/colorDarkPrimary</item>
@@ -19,6 +37,8 @@
         <item name="android:statusBarColor">@color/colorBlackPrimary</item>
     </style>
 
+
+    <!-- Black Theme -->
     <style name="BlackAppTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/colorBlackPrimary</item>
         <item name="colorPrimaryDark">@color/colorBlackPrimary</item>
@@ -26,11 +46,6 @@
         <item name="android:textColor">@color/textColorDarkPrimary</item>
         <item name="android:windowBackground">@color/colorBlackPrimary</item>
         <item name="android:statusBarColor">@color/colorBlackPrimary</item>
-    </style>
-
-    <style name="lightDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
-        <item name="android:windowBackground">@color/colorLightDialogBackground</item>
-        <item name="android:textColor">@color/textColorLight</item>
     </style>
 
 </resources>
