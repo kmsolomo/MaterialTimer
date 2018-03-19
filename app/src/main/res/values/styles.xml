@@ -2,28 +2,20 @@
 <resources>
 
     <!-- Light Theme -->
-    <style name="LightAppTheme" parent="Theme.AppCompat.NoActionBar">
+    <style name="LightAppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/colorLightPrimary</item>
         <item name="colorPrimaryDark">@color/colorLightPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColor">@color/colorBlackPrimary</item>
         <item name="android:textColorSecondary">@color/textColorLight</item>
-        <item name="android:alertDialogTheme">@style/LightDialogTheme</item>
-        <item name="android:listSeparatorTextViewStyle">@style/ListSeparatorLightColor</item>
         <item name="android:windowBackground">@color/colorLightPrimary</item>
+        <item name="android:colorControlNormal">@color/colorLightPrimary</item>
+        <item name="android:alertDialogTheme">@style/AlertDialogLight</item>
     </style>
 
-    <style name="LightDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name="android:windowBackground">@color/colorLightPrimary</item>
-        <item name="android:textColor">@color/colorBlackPrimary</item>
-    </style>
-
-    <style name="ListSeparatorLightColor" >
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">1dp</item>
-        <item name="android:divider">@color/textColorLight</item>
-        <item name="android:dividerHeight">1dp</item>
-        <item name="android:listDivider">@color/colorBlackPrimary</item>
+    <style name="AlertDialogLight" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:colorControlNormal">@color/textColorLight</item>
+        <item name="android:textColorAlertDialogListItem">@color/colorBlackPrimary</item>
     </style>
 
     <!-- Dark Theme -->

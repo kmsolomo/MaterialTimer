@@ -3,6 +3,7 @@
 
     <!-- Core -->
     <color name="colorAccent">#009688</color>
+    <color name="colorAccentDark">#00675b</color>
     <color name="colorIcon">#FFFFFF</color>
 
 

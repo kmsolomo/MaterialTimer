@@ -3,6 +3,8 @@ package com.example.admin.materialtimer;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.ListPreference;
+import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
 /**
@@ -53,10 +55,13 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key){
 
-        String value = sharedPreferences.getString(key,"");
+        Preference pref = findPreference(key);
 
-        if(value.equals(themeLight) || value.equals(themeDark) || value.equals(themeBlack)){
-            themeChangeListener.onThemeChange();
+        if(pref instanceof ListPreference){
+            String value = sharedPreferences.getString(key,"");
+            if(value.equals(themeLight) || value.equals(themeDark) || value.equals(themeBlack)){
+                themeChangeListener.onThemeChange();
+            }
         }
     }
 
