@@ -17,10 +17,16 @@ public class MainActivity extends Activity{
     private ImageButton settingsButton;
     private TextView timerView;
     private int clickControl;
+    private SharedPreferences sharedPref;
+    private String themeKey = "pref_theme_value";
+    private String defaultTheme = "Dark";
+    private String appTheme;
+    private final int THEME_REQUEST_CODE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        themeCheck();
         setContentView(R.layout.activity_main);
 
         //Bind Views
@@ -38,6 +44,7 @@ public class MainActivity extends Activity{
         //initialize default values
         timerView.setText(timerVal);
         controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
+        //controlButton.setBackgroundColor(getResources().getColor(R.color.textColorLight));
 
         //Create Work Timer
         final CountDownTimer firstTimer = new CountDownTimer(30000, 1000) {
@@ -89,10 +96,37 @@ public class MainActivity extends Activity{
         settingsButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
-                Intent i = new Intent(MainActivity.this,SettingsActivity.class);
-                startActivity(i);
+                Intent data = new Intent(MainActivity.this,SettingsActivity.class);
+                startActivityForResult(data,THEME_REQUEST_CODE);
             }
         });
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+
+        if(requestCode == THEME_REQUEST_CODE){
+            recreate();
+        }
+    }
+
+    public void themeCheck(){
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        appTheme = sharedPref.getString(themeKey,defaultTheme);
+
+        switch(appTheme){
+            case "Light":
+                setTheme(R.style.LightAppTheme);
+                break;
+            case "Dark":
+                setTheme(R.style.DarkAppTheme);
+                break;
+            case "Black":
+                setTheme(R.style.BlackAppTheme);
+                break;
+            default:
+                break;
+        }
     }
 }
