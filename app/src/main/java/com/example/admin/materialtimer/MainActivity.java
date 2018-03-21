@@ -16,7 +16,7 @@ public class MainActivity extends Activity{
     private FloatingActionButton controlButton;
     private ImageButton settingsButton;
     private TextView timerView;
-    private int clickControl;
+    private int clickControl = 0;
     private SharedPreferences sharedPref;
     private String themeKey = "pref_theme_value";
     private String defaultTheme = "Dark";
@@ -30,21 +30,20 @@ public class MainActivity extends Activity{
         setContentView(R.layout.activity_main);
 
         //Bind Views
-        clickControl = 0;
         controlButton = findViewById(R.id.floatingActionButton);
         timerView = findViewById(R.id.timerTextView);
-        settingsButton = findViewById(R.id.imageButton);
+        settingsButton = findViewById(R.id.SettingsButton);
 
         //Set Default Preferences
         PreferenceManager.setDefaultValues(getApplicationContext(),R.xml.preferences,false);
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String timerVal = sharedPref.getString("pref_work_time","");
 
-
         //initialize default values
         timerView.setText(timerVal);
+        timerView.setTextColor(getResources().getColor(R.color.textColorLight));
         controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
-        //controlButton.setBackgroundColor(getResources().getColor(R.color.textColorLight));
+        settingsButton.setBackground(getResources().getDrawable(R.drawable.ic_settings_light_44dp));
 
         //Create Work Timer
         final CountDownTimer firstTimer = new CountDownTimer(30000, 1000) {

@@ -26,7 +26,6 @@ public class SettingsActivity extends Activity implements SettingsFragment.OnThe
     String appTheme;
     String themeKey = "pref_theme_value";
     String defaultTheme = "Dark";
-    public static final String THEME_RESULT = "com.example.admin.materialtimer.theme_result";
 
     @Override
     protected void onCreate(Bundle onSaveInstanceState){
