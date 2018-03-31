@@ -16,12 +16,14 @@ public class MainActivity extends Activity{
     private FloatingActionButton controlButton;
     private ImageButton settingsButton;
     private TextView timerView;
-    private int clickControl = 0;
+    private boolean timerStatus = false;
     private SharedPreferences sharedPref;
     private String themeKey = "pref_theme_value";
     private String defaultTheme = "Dark";
     private String appTheme;
+    private String timerVal;
     private final int THEME_REQUEST_CODE = 1;
+    private long milliSecondsLeft;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,59 +36,25 @@ public class MainActivity extends Activity{
         timerView = findViewById(R.id.timerTextView);
         settingsButton = findViewById(R.id.SettingsButton);
 
-        //Set Default Preferences
-        PreferenceManager.setDefaultValues(getApplicationContext(),R.xml.preferences,false);
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        String timerVal = sharedPref.getString("pref_work_time","");
-
-        //initialize default values
-        timerView.setText(timerVal);
-        timerView.setTextColor(getResources().getColor(R.color.textColorLight));
-        controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
-        settingsButton.setBackground(getResources().getDrawable(R.drawable.ic_settings_light_44dp));
-
-        //Create Work Timer
-        final CountDownTimer firstTimer = new CountDownTimer(30000, 1000) {
-            @Override
-            public void onTick(long l) {
-                long timeInSeconds = l / 1000;
-                String currentTime = String.valueOf(timeInSeconds);
-                timerView.setText(currentTime);
-            }
-
-            @Override
-            public void onFinish() {
-                timerView.setText("0");
-            }
-        };
-
-        //Create Break Timer
-        final CountDownTimer secondTimer = new CountDownTimer(60000, 1000) {
-            @Override
-            public void onTick(long l) {
-                long timeInSeconds = l / 1000;
-                String currentTime = String.valueOf(timeInSeconds);
-                timerView.setText(currentTime);
-            }
-
-            @Override
-            public void onFinish() {
-                timerView.setText("0");
-            }
-        };
+        setupPref();
+        milliSecondsLeft = convertTime(timerVal);
+        updateTimer(milliSecondsLeft);
+        initDefaultVal();
 
         //Floating action button
         controlButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if(clickControl == 1){
+                if(timerStatus == true){
                     controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
-                    clickControl = 0;
+                    timerStatus = false;
+                    timerControl(milliSecondsLeft,timerStatus);
 
                 } else {
                     controlButton.setImageResource(R.drawable.ic_pause_44dp);
-                    clickControl = 1;
+                    timerStatus = true;
+                    timerControl(milliSecondsLeft, timerStatus);
                 }
             }
         });
@@ -99,15 +67,53 @@ public class MainActivity extends Activity{
                 startActivityForResult(data,THEME_REQUEST_CODE);
             }
         });
-
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
-
         if(requestCode == THEME_REQUEST_CODE){
             recreate();
         }
+    }
+
+    public void setupPref(){
+        //Set Default Preferences
+        PreferenceManager.setDefaultValues(getApplicationContext(),R.xml.preferences,false);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        timerVal = sharedPref.getString("pref_work_time","");
+    }
+
+    public void initDefaultVal(){
+        //initialize default values
+        timerView.setTextColor(getResources().getColor(R.color.textColorLight));
+        controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
+        settingsButton.setBackground(getResources().getDrawable(R.drawable.ic_settings_light_44dp));
+    }
+
+    public long convertTime(String value){
+        return Long.valueOf(value) * 60000;
+    }
+
+    public void timerControl(long timeLeft, boolean control){
+
+        CountDownTimer firstTimer = new CountDownTimer(timeLeft, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                milliSecondsLeft = millisUntilFinished;
+                updateTimer(milliSecondsLeft);
+            }
+
+            @Override
+            public void onFinish() {
+            }
+        };
+
+        if(control){
+            firstTimer.start();
+        } else {
+            firstTimer.cancel();
+        }
+
     }
 
     public void themeCheck(){
@@ -127,5 +133,27 @@ public class MainActivity extends Activity{
             default:
                 break;
         }
+    }
+
+    public void updateTimer(long milliSecondsLeft){
+        int minutes = (int) milliSecondsLeft / 60000;
+        int seconds = (int) milliSecondsLeft % 60000 / 1000;
+        String currentTime = "";
+
+        if(minutes < 10){
+            currentTime = "0" + minutes;
+        } else {
+            currentTime += minutes;
+        }
+
+        currentTime += ":";
+
+        if(seconds < 10){
+            currentTime += "0" + seconds;
+        } else {
+            currentTime += seconds;
+        }
+
+        timerView.setText(currentTime);
     }
 }
