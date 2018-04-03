@@ -13,16 +13,22 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity{
 
+    public enum TimerState {
+        Running, Stopped, Paused
+    }
+
     private FloatingActionButton controlButton;
     private ImageButton settingsButton;
     private TextView timerView;
-    private boolean timerStatus = false;
+
     private SharedPreferences sharedPref;
-    private String themeKey = "pref_theme_value";
+    private CountDownTimer timer;
+    private String [] keyChain = {"pref_theme_value","pref_work_time","pref_break_time",
+            "pref_long_break_time","pref_loop_amount"};
     private String defaultTheme = "Dark";
-    private String appTheme;
-    private String timerVal;
+    private String appTheme,timerVal;
     private final int THEME_REQUEST_CODE = 1;
+    private TimerState timerStatus = TimerState.Stopped;
     private long milliSecondsLeft;
 
     @Override
@@ -36,25 +42,25 @@ public class MainActivity extends Activity{
         timerView = findViewById(R.id.timerTextView);
         settingsButton = findViewById(R.id.SettingsButton);
 
-        setupPref();
-        milliSecondsLeft = convertTime(timerVal);
-        updateTimer(milliSecondsLeft);
         initDefaultVal();
+        //milliSecondsLeft = convertTime(timerVal);
+        milliSecondsLeft = 10000;
+        updateTimer(milliSecondsLeft);
 
         //Floating action button
         controlButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(timerStatus == TimerState.Running){
 
-                if(timerStatus == true){
+                    //TODO: Pause Timer
+
                     controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
-                    timerStatus = false;
-                    timerControl(milliSecondsLeft,timerStatus);
-
                 } else {
+
+                    //TODO: Start Timer
+
                     controlButton.setImageResource(R.drawable.ic_pause_44dp);
-                    timerStatus = true;
-                    timerControl(milliSecondsLeft, timerStatus);
                 }
             }
         });
@@ -76,27 +82,9 @@ public class MainActivity extends Activity{
         }
     }
 
-    public void setupPref(){
-        //Set Default Preferences
-        PreferenceManager.setDefaultValues(getApplicationContext(),R.xml.preferences,false);
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        timerVal = sharedPref.getString("pref_work_time","");
-    }
+    public void startTimer(){
 
-    public void initDefaultVal(){
-        //initialize default values
-        timerView.setTextColor(getResources().getColor(R.color.textColorLight));
-        controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
-        settingsButton.setBackground(getResources().getDrawable(R.drawable.ic_settings_light_44dp));
-    }
-
-    public long convertTime(String value){
-        return Long.valueOf(value) * 60000;
-    }
-
-    public void timerControl(long timeLeft, boolean control){
-
-        CountDownTimer firstTimer = new CountDownTimer(timeLeft, 1000) {
+        timer = new CountDownTimer(milliSecondsLeft, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 milliSecondsLeft = millisUntilFinished;
@@ -105,20 +93,30 @@ public class MainActivity extends Activity{
 
             @Override
             public void onFinish() {
+                startTimer();
             }
-        };
+        }.start();
+    }
 
-        if(control){
-            firstTimer.start();
-        } else {
-            firstTimer.cancel();
-        }
+    public void initDefaultVal(){
+        //initialize default values
+        timerView.setTextColor(getResources().getColor(R.color.textColorLight));
+        controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
+        settingsButton.setBackground(getResources().getDrawable(R.drawable.ic_settings_light_44dp));
 
+        //Set Default Preferences
+        PreferenceManager.setDefaultValues(getApplicationContext(),R.xml.preferences,false);
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        timerVal = sharedPref.getString(keyChain[1],"");
+    }
+
+    public long convertTime(String value){
+        return Long.valueOf(value) * 60000;
     }
 
     public void themeCheck(){
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        appTheme = sharedPref.getString(themeKey,defaultTheme);
+        appTheme = sharedPref.getString(keyChain[0],defaultTheme);
 
         switch(appTheme){
             case "Light":
