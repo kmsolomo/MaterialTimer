@@ -34,7 +34,7 @@ public class MainActivity extends Activity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        themeCheck();
+        ThemeUtility.themeCheck(this);
         setContentView(R.layout.activity_main);
 
         //Bind Views
@@ -45,7 +45,7 @@ public class MainActivity extends Activity{
         initDefaultVal();
         //milliSecondsLeft = convertTime(timerVal);
         milliSecondsLeft = 10000;
-        updateTimer(milliSecondsLeft);
+        TimerUtility.updateTimer(milliSecondsLeft,timerView);
 
         //Floating action button
         controlButton.setOnClickListener(new View.OnClickListener() {
@@ -54,12 +54,13 @@ public class MainActivity extends Activity{
                 if(timerStatus == TimerState.Running){
 
                     //TODO: Pause Timer
-
+                    stopTimer();
+                    timerStatus = TimerState.Paused;
                     controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
                 } else {
-
                     //TODO: Start Timer
-
+                    startTimer(milliSecondsLeft);
+                    timerStatus = TimerState.Running;
                     controlButton.setImageResource(R.drawable.ic_pause_44dp);
                 }
             }
@@ -76,82 +77,69 @@ public class MainActivity extends Activity{
     }
 
     @Override
+    public void onResume(){
+        super.onResume();
+
+        milliSecondsLeft = sharedPref.getLong("TimeLeft",0);
+
+        restartTimer();
+        //TODO: remove notification, remove background timer, update clock
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+
+        if(timerStatus == TimerState.Running){
+            timer.cancel();
+
+            //TODO: start background service & notification
+
+        } else if (timerStatus == TimerState.Paused){
+
+            //TODO: show notification
+        }
+
+        //Save Data
+        //Testing
+        sharedPref.edit().putLong("TimeLeft",milliSecondsLeft).apply();
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         if(requestCode == THEME_REQUEST_CODE){
             recreate();
         }
     }
 
-    public void startTimer(){
+    public void restartTimer(){
 
-        timer = new CountDownTimer(milliSecondsLeft, 1000) {
+    }
+
+    public void startTimer(long timeLeft){
+
+        timer = new CountDownTimer(timeLeft, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 milliSecondsLeft = millisUntilFinished;
-                updateTimer(milliSecondsLeft);
+                TimerUtility.updateTimer(milliSecondsLeft,timerView);
             }
 
             @Override
             public void onFinish() {
-                startTimer();
+
             }
         }.start();
     }
 
-    public void initDefaultVal(){
-        //initialize default values
-        timerView.setTextColor(getResources().getColor(R.color.textColorLight));
-        controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
-        settingsButton.setBackground(getResources().getDrawable(R.drawable.ic_settings_light_44dp));
+    public void stopTimer(){
+        timer.cancel();
+    }
 
+    public void initDefaultVal(){
         //Set Default Preferences
         PreferenceManager.setDefaultValues(getApplicationContext(),R.xml.preferences,false);
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         timerVal = sharedPref.getString(keyChain[1],"");
-    }
-
-    public long convertTime(String value){
-        return Long.valueOf(value) * 60000;
-    }
-
-    public void themeCheck(){
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        appTheme = sharedPref.getString(keyChain[0],defaultTheme);
-
-        switch(appTheme){
-            case "Light":
-                setTheme(R.style.LightAppTheme);
-                break;
-            case "Dark":
-                setTheme(R.style.DarkAppTheme);
-                break;
-            case "Black":
-                setTheme(R.style.BlackAppTheme);
-                break;
-            default:
-                break;
-        }
-    }
-
-    public void updateTimer(long milliSecondsLeft){
-        int minutes = (int) milliSecondsLeft / 60000;
-        int seconds = (int) milliSecondsLeft % 60000 / 1000;
-        String currentTime = "";
-
-        if(minutes < 10){
-            currentTime = "0" + minutes;
-        } else {
-            currentTime += minutes;
-        }
-
-        currentTime += ":";
-
-        if(seconds < 10){
-            currentTime += "0" + seconds;
-        } else {
-            currentTime += seconds;
-        }
-
-        timerView.setText(currentTime);
     }
 }

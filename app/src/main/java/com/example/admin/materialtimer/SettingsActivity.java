@@ -19,26 +19,25 @@ import android.widget.Toolbar;
 
 public class SettingsActivity extends Activity implements SettingsFragment.OnThemeChangeListener{
 
-    Toolbar bar;
-    FragmentManager fragManager;
-    FragmentTransaction fragTransaction;
-    SharedPreferences sharedPref;
-    String appTheme;
-    String themeKey = "pref_theme_value";
-    String defaultTheme = "Dark";
+    private Toolbar bar;
+    private FragmentManager fragManager;
+    private FragmentTransaction fragTransaction;
+    private SharedPreferences sharedPref;
+    private String themeKey = "pref_theme_value";
+    private String defaultTheme = "Dark";
 
     @Override
     protected void onCreate(Bundle onSaveInstanceState){
 
         super.onCreate(onSaveInstanceState);
-        themeCheck();
+        ThemeUtility.themeCheck(this);
         setContentView(R.layout.settings);
 
         fragManager = getFragmentManager();
         fragTransaction = fragManager.beginTransaction();
         fragTransaction.replace(R.id.fragment_container, new SettingsFragment()).commit();
 
-        setupToolbar(appTheme);
+        setupToolbar();
     }
 
     @Override
@@ -56,26 +55,10 @@ public class SettingsActivity extends Activity implements SettingsFragment.OnThe
         recreate();
     }
 
-    public void themeCheck(){
+    public void setupToolbar(){
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        appTheme = sharedPref.getString(themeKey,defaultTheme);
+        String appTheme = sharedPref.getString(themeKey,defaultTheme);
 
-        switch(appTheme){
-            case "Light":
-                setTheme(R.style.LightAppTheme);
-                break;
-            case "Dark":
-                setTheme(R.style.DarkAppTheme);
-                break;
-            case "Black":
-                setTheme(R.style.BlackAppTheme);
-                break;
-            default:
-                break;
-        }
-    }
-
-    public void setupToolbar(String appTheme){
         if(appTheme.equals("Light")){
             bar = findViewById(R.id.toolbar);
             bar.setTitleTextColor(getResources().getColor(R.color.colorLightPrimary));
