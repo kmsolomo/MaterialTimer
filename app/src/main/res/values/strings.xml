@@ -9,7 +9,7 @@
     <integer name="workTimeDefaultValue">25</integer>
     <integer name="breakTimeDefaultValue">5</integer>
     <integer name="longBreakTimeDefaultValue">15</integer>
-    <integer name="loopAmountDefaultValue">2</integer>
+    <integer name="loopAmountDefaultValue">4</integer>
     <bool name="vibrateDefaultValue">false</bool>
 
     <!-- Themes -->
@@ -21,29 +21,6 @@
         <item>@string/LightTheme</item>
         <item>@string/DarkTheme</item>
         <item>@string/BlackTheme</item>
-    </string-array>
-
-    <string-array name="WorkTime">
-        <item>5</item>
-        <item>10</item>
-        <item>15</item>
-        <item>20</item>
-        <item>25</item>
-        <item>30</item>
-    </string-array>
-
-    <string-array name="BreakTime">
-        <item>5</item>
-        <item>10</item>
-        <item>15</item>
-    </string-array>
-
-    <string-array name="LoopAmount">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
     </string-array>
 
 </resources>

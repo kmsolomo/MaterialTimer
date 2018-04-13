@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:seekBar="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory
         android:title="General">
@@ -15,35 +16,51 @@
 
     <PreferenceCategory
         android:title="Timer Profile">
-        <ListPreference
-            android:title="Work Time"
-            android:summary="%s"
-            android:entries="@array/WorkTime"
-            android:entryValues="@array/WorkTime"
+        <com.pavelsikun.seekbarpreference.SeekBarPreference
             android:key="pref_work_time"
-            android:defaultValue="@integer/workTimeDefaultValue"/>
-        <ListPreference
-            android:title="Break Time"
-            android:summary="%s"
-            android:entries="@array/BreakTime"
-            android:entryValues="@array/BreakTime"
+            android:title="Work Time"
+            android:enabled="true"
+            android:defaultValue="25"
+            seekBar:msbp_minValue="1"
+            seekBar:msbp_maxValue="60"
+            seekBar:msbp_interval="1"
+            seekBar:msbp_measurementUnit="minutes"
+            seekBar:msbp_dialogEnabled="false"/>
+
+        <com.pavelsikun.seekbarpreference.SeekBarPreference
             android:key="pref_break_time"
-            android:defaultValue="@integer/breakTimeDefaultValue"/>
-        <ListPreference
-            android:title="Long Break Time"
-            android:summary="%s"
-            android:entries="@array/BreakTime"
-            android:entryValues="@array/BreakTime"
+            android:title="Break Time"
+            android:enabled="true"
+            android:defaultValue="5"
+            seekBar:msbp_minValue="1"
+            seekBar:msbp_maxValue="30"
+            seekBar:msbp_interval="1"
+            seekBar:msbp_measurementUnit="minutes"
+            seekBar:msbp_dialogEnabled="false"/>
+
+        <com.pavelsikun.seekbarpreference.SeekBarPreference
             android:key="pref_long_break_time"
-            android:defaultValue="@integer/longBreakTimeDefaultValue"/>
-        <ListPreference
-            android:title="Loops until long break"
-            android:summary="%s"
-            android:entries="@array/LoopAmount"
-            android:entryValues="@array/LoopAmount"
+            android:title="Long Break Time"
+            android:enabled="true"
+            android:defaultValue="15"
+            seekBar:msbp_minValue="1"
+            seekBar:msbp_maxValue="60"
+            seekBar:msbp_interval="1"
+            seekBar:msbp_measurementUnit="minutes"
+            seekBar:msbp_dialogEnabled="false"/>
+
+        <com.pavelsikun.seekbarpreference.SeekBarPreference
             android:key="pref_loop_amount"
-            android:defaultValue="@integer/loopAmountDefaultValue"/>
-    </PreferenceCategory>
+            android:title="Sessions Until Long Break"
+            android:enabled="true"
+            android:defaultValue="4"
+            seekBar:msbp_minValue="1"
+            seekBar:msbp_maxValue="10"
+            seekBar:msbp_interval="1"
+            seekBar:msbp_measurementUnit="sessions"
+            seekBar:msbp_dialogEnabled="false"/>
+
+  </PreferenceCategory>
 
     <PreferenceCategory
         android:title="Sound">
