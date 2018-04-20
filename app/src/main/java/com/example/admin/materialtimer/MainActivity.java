@@ -23,6 +23,7 @@ public class MainActivity extends Activity{
     private TimerState timerStatus = TimerState.Stopped;
     private long milliSecondsLeft;
     private final int THEME_REQUEST_CODE = 1;
+    private NotificationUtil notificationUtil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +41,8 @@ public class MainActivity extends Activity{
         milliSecondsLeft = 60000;
         timer = new TimerUtility(timerView,this);
         timer.updateTimer(milliSecondsLeft);
+
+        notificationUtil = new NotificationUtil();
 
         //Floating action button
         controlButton.setOnClickListener(new View.OnClickListener() {
@@ -70,10 +73,12 @@ public class MainActivity extends Activity{
     @Override
     public void onResume(){
         super.onResume();
-
-        //milliSecondsLeft = sharedPref.getLong("TimeLeft",0);
-
         //TODO: remove notification, remove background timer, update clock
+        if(timerStatus == TimerState.Running){
+            timer.startTimer();
+            timer.removeTimerAlarm(this);
+            notificationUtil.hideTimer(this);
+        }
     }
 
     @Override
@@ -81,17 +86,21 @@ public class MainActivity extends Activity{
         super.onPause();
 
         if(timerStatus == TimerState.Running){
-
             //TODO: start background service & notification
+            timer.pauseTimer();
+            timer.setTimerAlarm(this);
+            notificationUtil.setNotificationRunning(this);
 
         } else if (timerStatus == TimerState.Paused){
-
             //TODO: show notification
         }
+    }
 
-        //Save Data
-        //Testing
-        //sharedPref.edit().putLong("TimeLeft",milliSecondsLeft).apply();
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        timer.removeTimerAlarm(this );
     }
 
     @Override

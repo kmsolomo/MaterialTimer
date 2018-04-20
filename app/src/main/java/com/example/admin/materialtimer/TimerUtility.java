@@ -1,11 +1,18 @@
 package com.example.admin.materialtimer;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.os.CountDownTimer;
 import android.widget.TextView;
+
+import java.util.Calendar;
+
+import static android.content.Context.ALARM_SERVICE;
 
 /**
  * Created by admin on 4/3/18.
@@ -14,58 +21,52 @@ import android.widget.TextView;
 public class TimerUtility {
 
     public enum Timer {
-        Work, Break, LongBreak, Remaining
+        Work, Break, LongBreak
     }
 
     private Timer timer;
     private TextView timerView;
     private Handler timerHandler;
-    private long milliSecondsLeft;
+    private long milliSecondsLeft,countDownInterval;
     private int sessionBeforeLongBreak,sessionCount;
     private boolean sessionStart,customFlag;
     private SharedPreferences sharedPref;
     private Runnable workRun,breakRun,longBreakRun;
     private CountDownTimer workTimer,breakTimer,longBreakTimer,customTimer;
 
-    private final String THEME_VALUE = "pref_theme_value";
     private final String WORK_TIME = "pref_work_time";
     private final String BREAK_TIME = "pref_break_time";
     private final String LONG_BREAK_TIME = "pref_long_break_time";
     private final String LOOP_AMOUT_VALUE = "pref_loop_amount";
-
+    private final String ALARM_SET_TIME = "com.example.admin.materialtimer";
 
 
     public TimerUtility(TextView view,Context activity){
         timerView = view;
         sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
-        sessionCount = 0;
         timer = Timer.Work;
         sessionStart = false;
         customFlag = false;
+        sessionCount = 0;
+        countDownInterval = 300;
         timerHandler = new Handler();
         refreshTimers();
     }
 
     public void startTimer(){
-//        switch(timer){
-//            case Work:
-//                timerHandler.post(workRun);
-//                break;
-//            case Break:
-//                timerHandler.post(breakRun);
-//                break;
-//            case LongBreak:
-//                timerHandler.post(longBreakRun);
-//                break;
-//            default:
-//                startCustomTimer(getTime());
-//                break;
-//        }
         if(timer == Timer.Work && sessionStart == false){
             sessionStart = true;
             timerHandler.post(workRun);
         } else {
-            startCustomTimer(getTime());
+            long alarmSetTime = getAlarmTime();
+            long currentTime = Calendar.getInstance().getTimeInMillis();
+            long timeLeft = getTime();
+            if(alarmSetTime > 0){
+                timeLeft -= currentTime - alarmSetTime;
+                startCustomTimer(timeLeft);
+            } else {
+                startCustomTimer(timeLeft);
+            }
         }
     }
 
@@ -104,8 +105,21 @@ public class TimerUtility {
         return sharedPref.getLong("timeLeft",0);
     }
 
+    public void saveAlarmTime(long currentTime){
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putLong(ALARM_SET_TIME,currentTime);
+        editor.apply();
+    }
+
+    public long getAlarmTime(){
+        return sharedPref.getLong(ALARM_SET_TIME,0);
+    }
+
     public void resetTimer(){
-        //TODO: stop current timer and restore fresh state
+        timer = Timer.Work;
+        sessionStart = false;
+        customFlag = false;
+        refreshTimers();
     }
 
     public long convertTime(int value){
@@ -114,7 +128,7 @@ public class TimerUtility {
 
     public void startCustomTimer(long timeLeft){
         customFlag = true;
-         customTimer = new CountDownTimer(timeLeft,300) {
+         customTimer = new CountDownTimer(timeLeft,countDownInterval) {
              @Override
              public void onTick(long millisUntilFinished) {
                  milliSecondsLeft = millisUntilFinished;
@@ -130,6 +144,7 @@ public class TimerUtility {
                              sessionCount++;
                              timerHandler.post(breakRun);
                          } else {
+                             sessionCount = 0;
                              timerHandler.post(longBreakRun);
                          }
                          break;
@@ -137,7 +152,6 @@ public class TimerUtility {
                          timerHandler.post(workRun);
                          break;
                      case LongBreak:
-                         sessionCount = 0;
                          timerHandler.post(workRun);
                          break;
                      default:
@@ -170,12 +184,34 @@ public class TimerUtility {
         timerView.setText(currentTime);
     }
 
+    public void setTimerAlarm(Context context){
+        long currentTime = Calendar.getInstance().getTimeInMillis();
+        long alarmTrigger = currentTime + milliSecondsLeft;
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
+        Intent intent = new Intent(context, TimerReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context,1,intent,0);
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP,alarmTrigger,pendingIntent);
+        saveAlarmTime(currentTime);
+    }
+
+    public void removeTimerAlarm(Context context){
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
+        Intent intent = new Intent(context, TimerReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context,1,intent,0);
+        alarmManager.cancel(pendingIntent);
+        saveAlarmTime(0);
+    }
+
     public void refreshTimers(){
 
         //TODO: Get true values from shared preferences
-        final long workTime = 10000;
-        final long breakTime = 5000;
-        final long longBreakTime = 7000;
+        final long workTime = 60000;
+        final long breakTime = 30000;
+        final long longBreakTime = 40000;
+
+//      final long workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
+//      final long breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
+//      final long longBreakTime = convertTime(sharedPref.getLong(LONG_BREAK_TIME,15));
         sessionBeforeLongBreak = sharedPref.getInt(LOOP_AMOUT_VALUE,4);
 
         //Issue with CountDownTimer implementation
@@ -184,7 +220,7 @@ public class TimerUtility {
             @Override
             public void run(){
                 timer = Timer.Work;
-                workTimer = new CountDownTimer(workTime,300) {
+                workTimer = new CountDownTimer(workTime,countDownInterval) {
                     @Override
                     public void onTick(long l) {
                         milliSecondsLeft = l;
@@ -209,7 +245,7 @@ public class TimerUtility {
             @Override
             public void run() {
                 timer = Timer.Break;
-                breakTimer = new CountDownTimer(breakTime,300) {
+                breakTimer = new CountDownTimer(breakTime,countDownInterval) {
                     @Override
                     public void onTick(long l) {
                         milliSecondsLeft = l;
@@ -228,7 +264,7 @@ public class TimerUtility {
             @Override
             public void run() {
                 timer = Timer.LongBreak;
-                longBreakTimer = new CountDownTimer(longBreakTime,300) {
+                longBreakTimer = new CountDownTimer(longBreakTime,countDownInterval) {
                     @Override
                     public void onTick(long l) {
                         milliSecondsLeft = l;
