@@ -1,6 +1,10 @@
 package com.example.admin.materialtimer;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.app.Activity;
@@ -24,6 +28,24 @@ public class MainActivity extends Activity{
     private long milliSecondsLeft;
     private final int THEME_REQUEST_CODE = 1;
     private NotificationUtil notificationUtil;
+    private TimerService timerService;
+    private boolean serviceBound = false;
+    private Intent timerIntent;
+
+    private ServiceConnection timerConnection = new ServiceConnection(){
+
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service){
+            TimerService.TimerBinder binder = (TimerService.TimerBinder) service;
+            timerService = binder.getService();
+            serviceBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0){
+            serviceBound = false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,22 +60,22 @@ public class MainActivity extends Activity{
 
         PreferenceManager.setDefaultValues(this,R.xml.preferences,false);
 
-        milliSecondsLeft = 60000;
-        timer = new TimerUtility(timerView,this);
-        timer.updateTimer(milliSecondsLeft);
-
-        notificationUtil = new NotificationUtil();
+        //insures service persists bound lifecycle
+        timerIntent = new Intent(MainActivity.this, TimerService.class);
+        startService(timerIntent);
 
         //Floating action button
         controlButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(timerStatus == TimerState.Running){
-                    timer.pauseTimer();
+
+                    timerService.pauseTimer();
                     timerStatus = TimerState.Paused;
                     controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
                 } else {
-                    timer.startTimer();
+
+                    timerService.startTimer();
                     timerStatus = TimerState.Running;
                     controlButton.setImageResource(R.drawable.ic_pause_44dp);
                 }
@@ -71,13 +93,21 @@ public class MainActivity extends Activity{
     }
 
     @Override
+    public void onStart(){
+        super.onStart();
+        bindService(timerIntent, timerConnection, Context.BIND_AUTO_CREATE);
+
+        //Connect Components
+        timerService.connectComponents(MainActivity.this, timerView);
+    }
+
+    @Override
     public void onResume(){
         super.onResume();
         //TODO: remove notification, remove background timer, update clock
         if(timerStatus == TimerState.Running){
             timer.startTimer();
             timer.removeTimerAlarm(this);
-            notificationUtil.hideTimer(this);
         }
     }
 
@@ -89,7 +119,6 @@ public class MainActivity extends Activity{
             //TODO: start background service & notification
             timer.pauseTimer();
             timer.setTimerAlarm(this);
-            notificationUtil.setNotificationRunning(this);
 
         } else if (timerStatus == TimerState.Paused){
             //TODO: show notification
@@ -97,10 +126,14 @@ public class MainActivity extends Activity{
     }
 
     @Override
-    public void onDestroy()
-    {
+    public void onStop(){
+        super.onStop();
+        unbindService(timerConnection);
+    }
+
+    @Override
+    public void onDestroy() {
         super.onDestroy();
-        timer.removeTimerAlarm(this );
     }
 
     @Override

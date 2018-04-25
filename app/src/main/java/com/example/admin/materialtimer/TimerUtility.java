@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.os.CountDownTimer;
@@ -190,7 +191,13 @@ public class TimerUtility {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
         Intent intent = new Intent(context, TimerReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context,1,intent,0);
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP,alarmTrigger,pendingIntent);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmTrigger, pendingIntent);
+        } else {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP,alarmTrigger,pendingIntent);
+        }
+
         saveAlarmTime(currentTime);
     }
 

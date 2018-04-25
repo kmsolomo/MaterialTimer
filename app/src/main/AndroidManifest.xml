@@ -27,6 +27,11 @@
             android:name=".TimerReceiver">
         </receiver>
 
+        <service
+            android:name=".TimerService"
+            android:exported="false">
+        </service>
+
     </application>
 
 </manifest>
