@@ -10,9 +10,10 @@ public interface TimerInterface {
     void pauseTimer();
     void saveTime();
     long getTime();
-    void saveAlarmTime();
-    long getAlarmTime();
+//    void saveAlarmTime();
+//    long getAlarmTime();
     void resetTimer();
+    long convertTime(int value);
     void startCustomTimer(long timeLeft);
     void updateTimer(long milliSecondsLeft);
     void refreshTimers();

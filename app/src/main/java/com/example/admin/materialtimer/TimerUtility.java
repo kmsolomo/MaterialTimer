@@ -129,7 +129,7 @@ public class TimerUtility {
 
     public void startCustomTimer(long timeLeft){
         customFlag = true;
-         customTimer = new CountDownTimer(timeLeft,countDownInterval) {
+        customTimer = new CountDownTimer(timeLeft,countDownInterval) {
              @Override
              public void onTick(long millisUntilFinished) {
                  milliSecondsLeft = millisUntilFinished;
