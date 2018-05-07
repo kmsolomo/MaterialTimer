@@ -1,22 +1,20 @@
 package com.example.admin.materialtimer;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Binder;
+import android.os.Build;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.Message;
+import android.os.Messenger;
 import android.os.Process;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.TextView;
-
 
 
 /**
@@ -29,21 +27,18 @@ public class TimerService extends Service implements TimerInterface {
         Work, Break, LongBreak
     }
 
-    private final IBinder timerBinder = new TimerBinder();
-    private TextView timerView;
-
     //TimerUtility
     private Timer timer;
     private Handler timerHandler;
     private HandlerThread workerThread;
-    private Looper workerLooper;
     private long milliSecondsLeft,countDownInterval;
     private int sessionBeforeLongBreak,sessionCount;
     private boolean sessionStart,customFlag,connected,notification;
     private SharedPreferences sharedPref;
     private Runnable workRun,breakRun,longBreakRun;
     private CountDownTimer workTimer,breakTimer,longBreakTimer,customTimer;
-    private NotificationUtil notify;
+    private NotificationUtil notifUtil;
+    private Messenger timerMessenger, uiMessenger;
 
     private final String WORK_TIME = "pref_work_time";
     private final String BREAK_TIME = "pref_break_time";
@@ -51,14 +46,42 @@ public class TimerService extends Service implements TimerInterface {
     private final String LOOP_AMOUT_VALUE = "pref_loop_amount";
     private final String ALARM_SET_TIME = "com.example.admin.materialtimer";
 
-    public class TimerBinder extends Binder {
-        TimerService getService(){
-            return TimerService.this;
+
+    public static final String TIMER_RESTART = "timer_service_restart";
+    public static final String ACTION_START = "start";
+    public static final String ACTION_PAUSE = "pause";
+    public static final String ACTION_RESET = "reset";
+    public static final int START_TIMER = 1;
+    public static final int PAUSE_TIMER = 2;
+    public static final int REGISTER_CLIENT = 3;
+
+
+    /**
+     * Handler for incoming messages from clients.
+     */
+    private class ServiceHandler extends Handler {
+
+        public ServiceHandler(Looper looper){
+            super(looper);
+        }
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case START_TIMER:
+                    Log.v("hanldeMessage","startTimer");
+                    startTimer();
+                    break;
+                case PAUSE_TIMER:
+                    pauseTimer();
+                    break;
+                case REGISTER_CLIENT:
+                    uiMessenger = msg.replyTo;
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
         }
     }
-
-    //Create Message Handler
-
 
     @Override
     public void onCreate(){
@@ -71,16 +94,47 @@ public class TimerService extends Service implements TimerInterface {
         sessionCount = 0;
         countDownInterval = 300;
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        notify = new NotificationUtil(this);
+        notifUtil = new NotificationUtil(this);
 
         workerThread = new HandlerThread("WorkerThread", Process.THREAD_PRIORITY_BACKGROUND);
         workerThread.start();
-        workerLooper = workerThread.getLooper();
-        timerHandler = new Handler(workerLooper);
+        timerHandler = new Handler(workerThread.getLooper());
+        timerMessenger = new Messenger(new ServiceHandler(workerThread.getLooper()));
+        refreshTimers();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
+
+        if(intent != null){
+            if(intent.getAction() != null){
+                switch(intent.getAction()){
+                    case TIMER_RESTART:
+                        startTimer();
+                        break;
+                    case ACTION_START:
+                        startTimer();
+                        startForeground(NotificationUtil.NOTIFICATION_ID,
+                                notifUtil.buildNotification(formatTime(getTime()),
+                                true));
+                        notifUtil.updateNotification(formatTime(getTime()));
+                        break;
+                    case ACTION_PAUSE:
+                        pauseTimer();
+                        startForeground(NotificationUtil.NOTIFICATION_ID,
+                                        notifUtil.buildNotification(formatTime(getTime()),
+                                                false));
+                        notifUtil.updateNotification(formatTime(getTime()));
+                        break;
+                    case ACTION_RESET:
+                        resetTimer();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        Log.v("TimerService","onStartCommand()");
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -88,12 +142,13 @@ public class TimerService extends Service implements TimerInterface {
     public IBinder onBind(Intent intent){
         connected = true;
         Log.v("TimerService","onBind");
-        return timerBinder;
+        return timerMessenger.getBinder();
     }
 
     @Override
     public boolean onUnbind(Intent intent){
         connected = false;
+        uiMessenger = null;
         Log.v("TimerService","onUnbind");
         return true;
     }
@@ -105,13 +160,29 @@ public class TimerService extends Service implements TimerInterface {
         super.onRebind(intent);
     }
 
-    public void connectComponent(TextView view){
-        timerView = view;
-        refreshTimers();
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        Log.v("TimerService","onDestroy()");
     }
 
-    public void disconnectComponent(){
-        timerView = null;
+    @Override
+    public void onTaskRemoved(Intent intent){
+        /**
+         * if timer is paused save state and restart in paused state
+         * else if timer is running pause and restart
+        */
+        //if timer is running
+        //save state & time
+        pauseTimer();
+
+        Intent restartIntent = new Intent(this, TimerReceiver.class);
+        restartIntent.setAction(TIMER_RESTART);
+        sendBroadcast(restartIntent);
+
+
+        super.onTaskRemoved(intent);
+        Log.v("TimerService","onTaskRemoved");
     }
 
     public void startTimer(){
@@ -157,20 +228,13 @@ public class TimerService extends Service implements TimerInterface {
         return sharedPref.getLong("timeLeft",0);
     }
 
-//    public void saveAlarmTime(){
-//
-//    }
-//
-//    public long getAlarmTime(){
-//        return sharedPref.getLong(ALARM_SET_TIME,0);
-//    }
-
+    //TODO: Stop timer vs Stop service
     public void resetTimer(){
-//        timer = Timer.Work;
-//        sessionStart = false;
-//        customFlag = false;
-//        refreshTimers();
-        notify.hideTimer();
+        timer = Timer.Work;
+        sessionStart = false;
+        customFlag = false;
+        refreshTimers();
+        notifUtil.hideTimer();
         workerThread.quit();
         stopSelf();
     }
@@ -216,7 +280,7 @@ public class TimerService extends Service implements TimerInterface {
 
     }
 
-    public void updateTimer(long milliSecondsLeft){
+    public String formatTime(long milliSecondsLeft){
         int minutes = (int) milliSecondsLeft / 60000;
         int seconds = (int) milliSecondsLeft % 60000 / 1000;
         String currentTime = "";
@@ -235,18 +299,44 @@ public class TimerService extends Service implements TimerInterface {
             currentTime += seconds;
         }
 
-        if(connected){
+        return currentTime;
+    }
 
+    public void updateTimer(long milliSecondsLeft){
+
+        String currentTime = formatTime(milliSecondsLeft);
+
+        if(connected){
             if(notification){
                 notification = false;
-                notify.hideTimer();
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+                    stopForeground(NotificationUtil.NOTIFICATION_ID);
+                    notifUtil.hideTimer();
+                } else {
+                    stopForeground(true);
+                    notifUtil.hideTimer();
+                }
             }
 
-            timerView.setText(currentTime);
+            Message msg = Message.obtain();
+            msg.what = MainActivity.UPDATE_TIME;
+            msg.obj = currentTime;
+            try{
+                uiMessenger.send(msg);
+                Log.v("updateTimer","uiMessenger.send()");
+            } catch(RemoteException e){
+                Log.e("RemoteException",e.toString());
+            }
             Log.v("TimerService","textView");
         } else {
+            if(!notification){
+                //create function to return notification
+                startForeground(NotificationUtil.NOTIFICATION_ID,notifUtil.buildNotification(currentTime,true));
+            } else {
+                //update notification
+                notifUtil.updateNotification(currentTime);
+            }
             notification = true;
-            notify.post(currentTime, MainActivity.TimerState.Running);
             Log.v("TimerService","notification post");
         }
 

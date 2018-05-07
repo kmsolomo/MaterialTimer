@@ -3,7 +3,6 @@ package com.example.admin.materialtimer;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Vibrator;
 
 /**
  * Created by admin on 4/16/18.
@@ -11,23 +10,32 @@ import android.os.Vibrator;
 
 public class TimerReceiver extends BroadcastReceiver {
 
-    public static final String ACTION_START = "start";
-    public static final String ACTION_PAUSE = "pause";
-    public static final String ACTION_RESET = "reset";
-
     @Override
     public void onReceive(Context context, Intent intent){
-//
-//        TimerService timerService = (TimerService) context;
-//
-//        if(intent.getAction().equals(ACTION_PAUSE)){
-//            timerService.pauseTimer();
-//
-//        } else if(intent.getAction().equals(ACTION_RESET)){
-//            timerService.resetTimer();
-//        }
+        if(intent.getAction() != null){
+            switch(intent.getAction()){
+                case TimerService.TIMER_RESTART:
+                    Intent restartIntent = new Intent(context,TimerService.class);
+                    restartIntent.setAction(TimerService.TIMER_RESTART);
+                    context.startService(restartIntent);
+                    break;
+                case TimerService.ACTION_PAUSE:
+                    Intent pauseIntent = new Intent(context, TimerService.class);
+                    pauseIntent.setAction(TimerService.ACTION_PAUSE);
+                    context.startService(pauseIntent);
+                    break;
+                case TimerService.ACTION_START:
+                    Intent startIntent = new Intent(context, TimerService.class);
+                    startIntent.setAction(TimerService.ACTION_START);
+                    context.startService(startIntent);
+                    break;
+                case TimerService.ACTION_RESET:
+                    Intent resetIntent = new Intent(context, TimerService.class);
+                    resetIntent.setAction(TimerService.ACTION_RESET);
+                    context.startService(resetIntent);
+                    break;
+            }
 
-        //Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-        //vibrator.vibrate(1000);
+        }
     }
 }
