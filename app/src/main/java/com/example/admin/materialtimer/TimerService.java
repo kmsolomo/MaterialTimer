@@ -27,13 +27,12 @@ public class TimerService extends Service implements TimerInterface {
         Work, Break, LongBreak
     }
 
-    //TimerUtility
     private Timer timer;
     private Handler timerHandler;
     private HandlerThread workerThread;
     private long milliSecondsLeft,countDownInterval;
     private int sessionBeforeLongBreak,sessionCount;
-    private boolean sessionStart,customFlag,connected,notification;
+    private boolean sessionStart,customFlag,connected,notification,running;
     private SharedPreferences sharedPref;
     private Runnable workRun,breakRun,longBreakRun;
     private CountDownTimer workTimer,breakTimer,longBreakTimer,customTimer;
@@ -44,8 +43,6 @@ public class TimerService extends Service implements TimerInterface {
     private final String BREAK_TIME = "pref_break_time";
     private final String LONG_BREAK_TIME = "pref_long_break_time";
     private final String LOOP_AMOUT_VALUE = "pref_loop_amount";
-    private final String ALARM_SET_TIME = "com.example.admin.materialtimer";
-
 
     public static final String TIMER_RESTART = "timer_service_restart";
     public static final String ACTION_START = "start";
@@ -54,7 +51,9 @@ public class TimerService extends Service implements TimerInterface {
     public static final int START_TIMER = 1;
     public static final int PAUSE_TIMER = 2;
     public static final int REGISTER_CLIENT = 3;
-
+    public static final int SYNC_CLIENT = 4;
+    public static final int START_NOTIFICATION = 5;
+    public static final int STOP_NOTIFICATION = 6;
 
     /**
      * Handler for incoming messages from clients.
@@ -68,7 +67,6 @@ public class TimerService extends Service implements TimerInterface {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case START_TIMER:
-                    Log.v("hanldeMessage","startTimer");
                     startTimer();
                     break;
                 case PAUSE_TIMER:
@@ -77,11 +75,21 @@ public class TimerService extends Service implements TimerInterface {
                 case REGISTER_CLIENT:
                     uiMessenger = msg.replyTo;
                     break;
+                case SYNC_CLIENT:
+                    synchronizeClient();
+                    break;
+                case START_NOTIFICATION:
+                    startNotification();
+                    break;
+                case STOP_NOTIFICATION:
+                    stopNotification();
+                    break;
                 default:
                     super.handleMessage(msg);
             }
         }
     }
+
 
     @Override
     public void onCreate(){
@@ -91,11 +99,12 @@ public class TimerService extends Service implements TimerInterface {
         customFlag = false;
         connected = false;
         notification = false;
+        running = false;
         sessionCount = 0;
         countDownInterval = 300;
+
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         notifUtil = new NotificationUtil(this);
-
         workerThread = new HandlerThread("WorkerThread", Process.THREAD_PRIORITY_BACKGROUND);
         workerThread.start();
         timerHandler = new Handler(workerThread.getLooper());
@@ -134,29 +143,22 @@ public class TimerService extends Service implements TimerInterface {
                 }
             }
         }
-        Log.v("TimerService","onStartCommand()");
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public IBinder onBind(Intent intent){
-        connected = true;
-        Log.v("TimerService","onBind");
         return timerMessenger.getBinder();
     }
 
     @Override
     public boolean onUnbind(Intent intent){
-        connected = false;
         uiMessenger = null;
-        Log.v("TimerService","onUnbind");
         return true;
     }
 
     @Override
     public void onRebind(Intent intent){
-        connected = true;
-        Log.v("TimerService","onRebind");
         super.onRebind(intent);
     }
 
@@ -185,7 +187,68 @@ public class TimerService extends Service implements TimerInterface {
         Log.v("TimerService","onTaskRemoved");
     }
 
+    private void synchronizeClient(){
+        //Update UI on initial startup && remove notification when returning to main UI
+        if(timer == Timer.Work && !sessionStart){
+            updateTimer(convertTime(sharedPref.getInt(WORK_TIME,25)));
+        } else {
+            if(notification){
+                stopNotification();
+                notification = false;
+            }
+            updateTimer(getTime());
+        }
+
+        Message msgState = Message.obtain();
+        msgState.what = TimerActivity.UPDATE_STATE;
+        msgState.obj = running;
+
+        try{
+            uiMessenger.send(msgState);
+        } catch (RemoteException e){
+            Log.d("TimerService", e.toString());
+        }
+        Log.v("TimerService","syncService");
+    }
+
+    private void startNotification(){
+        if(!notification){
+            startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),false));
+            notifUtil.updateNotification(formatTime(getTime()));
+            notification = true;
+        }
+        Log.v("startNotification","notification started");
+    }
+
+    private void stopNotification(){
+        if(notification){
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+                stopForeground(NotificationUtil.NOTIFICATION_ID);
+                notifUtil.hideTimer();
+            } else {
+                stopForeground(true);
+                notifUtil.hideTimer();
+            }
+        }
+    }
+
+    public void saveTime(){
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putLong("timeLeft",milliSecondsLeft);
+        editor.apply();
+    }
+
+    public long getTime(){
+        return sharedPref.getLong("timeLeft",0);
+    }
+
+    public long convertTime(int value){
+        return Long.valueOf(value) * 60000;
+    }
+
+
     public void startTimer(){
+        running = true;
         if(timer == Timer.Work && !sessionStart){
             sessionStart = true;
             timerHandler.post(workRun);
@@ -195,6 +258,7 @@ public class TimerService extends Service implements TimerInterface {
     }
 
     public void pauseTimer(){
+        running = false;
         if(customFlag){
             saveTime();
             customTimer.cancel();
@@ -218,29 +282,23 @@ public class TimerService extends Service implements TimerInterface {
         }
     }
 
-    public void saveTime(){
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putLong("timeLeft",milliSecondsLeft);
-        editor.apply();
-    }
-
-    public long getTime(){
-        return sharedPref.getLong("timeLeft",0);
-    }
-
-    //TODO: Stop timer vs Stop service
+    //TODO: stop dependent on timer state
     public void resetTimer(){
-        timer = Timer.Work;
-        sessionStart = false;
-        customFlag = false;
-        refreshTimers();
-        notifUtil.hideTimer();
-        workerThread.quit();
-        stopSelf();
-    }
-
-    public long convertTime(int value){
-        return Long.valueOf(value) * 60000;
+        if(connected){
+            timer = Timer.Work;
+            sessionStart = false;
+            customFlag = false;
+            refreshTimers();
+            notifUtil.hideTimer();
+        } else {
+            timer = Timer.Work;
+            sessionStart = false;
+            customFlag = false;
+            refreshTimers();
+            notifUtil.hideTimer();
+            workerThread.quit();
+            stopSelf();
+        }
     }
 
     public void startCustomTimer(long timeLeft){
@@ -306,51 +364,31 @@ public class TimerService extends Service implements TimerInterface {
 
         String currentTime = formatTime(milliSecondsLeft);
 
-        if(connected){
-            if(notification){
-                notification = false;
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-                    stopForeground(NotificationUtil.NOTIFICATION_ID);
-                    notifUtil.hideTimer();
-                } else {
-                    stopForeground(true);
-                    notifUtil.hideTimer();
-                }
-            }
-
-            Message msg = Message.obtain();
-            msg.what = MainActivity.UPDATE_TIME;
-            msg.obj = currentTime;
+        if(notification){
+            notifUtil.updateNotification(currentTime);
+        } else {
+            Message updateUI = Message.obtain();
+            updateUI.what = TimerActivity.UPDATE_TIME;
+            updateUI.obj = currentTime;
             try{
-                uiMessenger.send(msg);
-                Log.v("updateTimer","uiMessenger.send()");
+                uiMessenger.send(updateUI);
             } catch(RemoteException e){
                 Log.e("RemoteException",e.toString());
             }
-            Log.v("TimerService","textView");
-        } else {
-            if(!notification){
-                //create function to return notification
-                startForeground(NotificationUtil.NOTIFICATION_ID,notifUtil.buildNotification(currentTime,true));
-            } else {
-                //update notification
-                notifUtil.updateNotification(currentTime);
-            }
-            notification = true;
-            Log.v("TimerService","notification post");
+            Log.v("TimerService","updateTimer");
         }
-
     }
 
     public void refreshTimers(){
         //TODO: Get true values from shared preferences
-        final long workTime = 60000;
-        final long breakTime = 30000;
-        final long longBreakTime = 40000;
+//        final long workTime = 60000;
+//        final long breakTime = 30000;
+//        final long longBreakTime = 40000;
 
-//      final long workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
-//      final long breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
-//      final long longBreakTime = convertTime(sharedPref.getLong(LONG_BREAK_TIME,15));
+        final long workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
+        final long breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
+        final long longBreakTime = convertTime(sharedPref.getInt(LONG_BREAK_TIME,15));
+
         sessionBeforeLongBreak = sharedPref.getInt(LOOP_AMOUT_VALUE,4);
 
         //Issue with CountDownTimer implementation

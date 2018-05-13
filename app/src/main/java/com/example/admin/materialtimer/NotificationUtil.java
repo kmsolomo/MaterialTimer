@@ -66,7 +66,7 @@ public class NotificationUtil {
     public Notification buildNotification(String currentTime, boolean timerRunning){
 
         //notification clicked
-        Intent timerIntent = new Intent(mainContext,MainActivity.class);
+        Intent timerIntent = new Intent(mainContext,TimerActivity.class);
         timerIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP| Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent timerPendingIntent = PendingIntent.getActivity(mainContext,0,timerIntent,PendingIntent.FLAG_UPDATE_CURRENT);
 
