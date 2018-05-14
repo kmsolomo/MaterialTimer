@@ -81,12 +81,12 @@ public class TimerActivity extends Activity{
         uiMsg.what = TimerService.REGISTER_CLIENT;
         uiMsg.replyTo = uiMessenger;
 
-        Message syncMsg = Message.obtain();
-        syncMsg.what = TimerService.SYNC_CLIENT;
+//        Message syncMsg = Message.obtain();
+//        syncMsg.what = TimerService.SYNC_CLIENT;
 
         try {
             timerMessenger.send(uiMsg);
-            timerMessenger.send(syncMsg);
+//            timerMessenger.send(syncMsg);
         } catch (RemoteException e){
             Log.v("RemoteException", e.toString());
         }

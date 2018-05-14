@@ -74,10 +74,11 @@ public class TimerService extends Service implements TimerInterface {
                     break;
                 case REGISTER_CLIENT:
                     uiMessenger = msg.replyTo;
-                    break;
-                case SYNC_CLIENT:
                     synchronizeClient();
                     break;
+//                case SYNC_CLIENT:
+//                    synchronizeClient();
+//                    break;
                 case START_NOTIFICATION:
                     startNotification();
                     break;
@@ -119,7 +120,7 @@ public class TimerService extends Service implements TimerInterface {
             if(intent.getAction() != null){
                 switch(intent.getAction()){
                     case TIMER_RESTART:
-                        startTimer();
+                        if(running)startTimer();
                         break;
                     case ACTION_START:
                         startTimer();
@@ -154,12 +155,14 @@ public class TimerService extends Service implements TimerInterface {
     @Override
     public boolean onUnbind(Intent intent){
         uiMessenger = null;
+        connected = false;
         return true;
     }
 
     @Override
     public void onRebind(Intent intent){
         super.onRebind(intent);
+        connected = true;
     }
 
     @Override
@@ -174,21 +177,20 @@ public class TimerService extends Service implements TimerInterface {
          * if timer is paused save state and restart in paused state
          * else if timer is running pause and restart
         */
-        //if timer is running
-        //save state & time
-        pauseTimer();
-
+        if(running){
+            pauseTimer();
+            running = true;
+        }
         Intent restartIntent = new Intent(this, TimerReceiver.class);
         restartIntent.setAction(TIMER_RESTART);
         sendBroadcast(restartIntent);
-
-
         super.onTaskRemoved(intent);
         Log.v("TimerService","onTaskRemoved");
     }
 
     private void synchronizeClient(){
         //Update UI on initial startup && remove notification when returning to main UI
+        connected = true;
         if(timer == Timer.Work && !sessionStart){
             updateTimer(convertTime(sharedPref.getInt(WORK_TIME,25)));
         } else {
@@ -213,7 +215,11 @@ public class TimerService extends Service implements TimerInterface {
 
     private void startNotification(){
         if(!notification){
-            startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),false));
+            if(running){
+                startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),true));
+            } else {
+                startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),false));
+            }
             notifUtil.updateNotification(formatTime(getTime()));
             notification = true;
         }
@@ -363,6 +369,10 @@ public class TimerService extends Service implements TimerInterface {
     public void updateTimer(long milliSecondsLeft){
 
         String currentTime = formatTime(milliSecondsLeft);
+
+        if(!connected && !notification){
+            startNotification();
+        }
 
         if(notification){
             notifUtil.updateNotification(currentTime);
