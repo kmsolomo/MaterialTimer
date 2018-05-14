@@ -21,7 +21,7 @@ import android.util.Log;
  * Created by admin on 4/21/18.
  */
 
-public class TimerService extends Service implements TimerInterface {
+public class TimerService extends Service{
 
     public enum Timer{
         Work, Break, LongBreak
@@ -45,15 +45,15 @@ public class TimerService extends Service implements TimerInterface {
     private final String LOOP_AMOUT_VALUE = "pref_loop_amount";
 
     public static final String TIMER_RESTART = "timer_service_restart";
+    public static final String SCREEN_OFF = "timer_screen_off";
     public static final String ACTION_START = "start";
     public static final String ACTION_PAUSE = "pause";
     public static final String ACTION_RESET = "reset";
     public static final int START_TIMER = 1;
     public static final int PAUSE_TIMER = 2;
     public static final int REGISTER_CLIENT = 3;
-    public static final int SYNC_CLIENT = 4;
-    public static final int START_NOTIFICATION = 5;
-    public static final int STOP_NOTIFICATION = 6;
+    public static final int START_NOTIFICATION = 4;
+    public static final int STOP_NOTIFICATION = 5;
 
     /**
      * Handler for incoming messages from clients.
@@ -76,9 +76,6 @@ public class TimerService extends Service implements TimerInterface {
                     uiMessenger = msg.replyTo;
                     synchronizeClient();
                     break;
-//                case SYNC_CLIENT:
-//                    synchronizeClient();
-//                    break;
                 case START_NOTIFICATION:
                     startNotification();
                     break;
@@ -90,7 +87,6 @@ public class TimerService extends Service implements TimerInterface {
             }
         }
     }
-
 
     @Override
     public void onCreate(){
@@ -138,6 +134,9 @@ public class TimerService extends Service implements TimerInterface {
                         break;
                     case ACTION_RESET:
                         resetTimer();
+                        break;
+                    case SCREEN_OFF:
+                        screenOff();
                         break;
                     default:
                         break;
@@ -210,7 +209,7 @@ public class TimerService extends Service implements TimerInterface {
         } catch (RemoteException e){
             Log.d("TimerService", e.toString());
         }
-        Log.v("TimerService","syncService");
+        Log.v("TimerService","synchronizeClient");
     }
 
     private void startNotification(){
@@ -223,7 +222,7 @@ public class TimerService extends Service implements TimerInterface {
             notifUtil.updateNotification(formatTime(getTime()));
             notification = true;
         }
-        Log.v("startNotification","notification started");
+        Log.v("startNotification","startNotification");
     }
 
     private void stopNotification(){
@@ -238,22 +237,49 @@ public class TimerService extends Service implements TimerInterface {
         }
     }
 
-    public void saveTime(){
+    private void saveTime(){
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putLong("timeLeft",milliSecondsLeft);
         editor.apply();
     }
 
-    public long getTime(){
+    private long getTime(){
         return sharedPref.getLong("timeLeft",0);
     }
 
-    public long convertTime(int value){
+    private long convertTime(int value){
         return Long.valueOf(value) * 60000;
     }
 
+    private void screenOff(){
+        if(!connected && sessionStart && !notification){
+            startNotification();
+        }
+    }
 
-    public void startTimer(){
+    private String formatTime(long milliSecondsLeft){
+        int minutes = (int) milliSecondsLeft / 60000;
+        int seconds = (int) milliSecondsLeft % 60000 / 1000;
+        String currentTime = "";
+
+        if (minutes < 10) {
+            currentTime = "0" + minutes;
+        } else {
+            currentTime += minutes;
+        }
+
+        currentTime += ":";
+
+        if (seconds < 10) {
+            currentTime += "0" + seconds;
+        } else {
+            currentTime += seconds;
+        }
+        return currentTime;
+    }
+
+
+    private void startTimer(){
         running = true;
         if(timer == Timer.Work && !sessionStart){
             sessionStart = true;
@@ -263,7 +289,7 @@ public class TimerService extends Service implements TimerInterface {
         }
     }
 
-    public void pauseTimer(){
+    private void pauseTimer(){
         running = false;
         if(customFlag){
             saveTime();
@@ -289,7 +315,7 @@ public class TimerService extends Service implements TimerInterface {
     }
 
     //TODO: stop dependent on timer state
-    public void resetTimer(){
+    private void resetTimer(){
         if(connected){
             timer = Timer.Work;
             sessionStart = false;
@@ -307,7 +333,7 @@ public class TimerService extends Service implements TimerInterface {
         }
     }
 
-    public void startCustomTimer(long timeLeft){
+    private void startCustomTimer(long timeLeft){
         customFlag = true;
         customTimer = new CountDownTimer(timeLeft,countDownInterval) {
             @Override
@@ -344,35 +370,8 @@ public class TimerService extends Service implements TimerInterface {
 
     }
 
-    public String formatTime(long milliSecondsLeft){
-        int minutes = (int) milliSecondsLeft / 60000;
-        int seconds = (int) milliSecondsLeft % 60000 / 1000;
-        String currentTime = "";
-
-        if (minutes < 10) {
-            currentTime = "0" + minutes;
-        } else {
-            currentTime += minutes;
-        }
-
-        currentTime += ":";
-
-        if (seconds < 10) {
-            currentTime += "0" + seconds;
-        } else {
-            currentTime += seconds;
-        }
-
-        return currentTime;
-    }
-
-    public void updateTimer(long milliSecondsLeft){
-
+    private void updateTimer(long milliSecondsLeft){
         String currentTime = formatTime(milliSecondsLeft);
-
-        if(!connected && !notification){
-            startNotification();
-        }
 
         if(notification){
             notifUtil.updateNotification(currentTime);
@@ -389,7 +388,7 @@ public class TimerService extends Service implements TimerInterface {
         }
     }
 
-    public void refreshTimers(){
+    private void refreshTimers(){
         //TODO: Get true values from shared preferences
 //        final long workTime = 60000;
 //        final long breakTime = 30000;

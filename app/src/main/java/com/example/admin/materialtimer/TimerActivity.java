@@ -1,8 +1,10 @@
 package com.example.admin.materialtimer;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
@@ -25,16 +27,17 @@ public class TimerActivity extends Activity{
         Running, Stopped, Paused
     }
 
+    public static final int UPDATE_TIME = 1;
+    public static final int UPDATE_STATE = 2;
+
     private FloatingActionButton controlButton;
     private ImageButton settingsButton;
     private TextView timerView;
-
     private TimerState timerStatus = TimerState.Stopped;
     private Intent timerIntent;
     private Messenger timerMessenger;
+    private BroadcastReceiver notificationReceiver;
     private final int THEME_REQUEST_CODE = 1;
-    public static final int UPDATE_TIME = 1;
-    public static final int UPDATE_STATE = 2;
 
     private ServiceConnection timerConnection = new ServiceConnection(){
         @Override
@@ -81,25 +84,24 @@ public class TimerActivity extends Activity{
         uiMsg.what = TimerService.REGISTER_CLIENT;
         uiMsg.replyTo = uiMessenger;
 
-//        Message syncMsg = Message.obtain();
-//        syncMsg.what = TimerService.SYNC_CLIENT;
-
         try {
             timerMessenger.send(uiMsg);
-//            timerMessenger.send(syncMsg);
         } catch (RemoteException e){
             Log.v("RemoteException", e.toString());
         }
     }
 
     private void stateUpdate(boolean state){
-        if(state){
-            timerStatus = TimerState.Running;
-            controlButton.setImageResource(R.drawable.ic_pause_44dp);
-        } else {
-            timerStatus = TimerState.Paused;
-            controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
+        if(timerStatus != TimerState.Stopped){
+            if(state){
+                timerStatus = TimerState.Running;
+                controlButton.setImageResource(R.drawable.ic_pause_44dp);
+            } else {
+                timerStatus = TimerState.Paused;
+                controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
+            }
         }
+
     }
 
     @Override
@@ -119,6 +121,12 @@ public class TimerActivity extends Activity{
         timerIntent = new Intent(TimerActivity.this, TimerService.class);
         startService(timerIntent);
 
+        //Broadcast receiver to send notification when screen off
+        notificationReceiver = new NotificationReceiver();
+        IntentFilter notificationFilter = new IntentFilter();
+        notificationFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(notificationReceiver,notificationFilter);
+
         //Restore state
         if(savedInstanceState != null){
             if(savedInstanceState.get("TIMER_STATE") == TimerState.Running){
@@ -137,7 +145,6 @@ public class TimerActivity extends Activity{
             @Override
             public void onClick(View view) {
                 if(timerStatus == TimerState.Running){
-
                     Message msg = Message.obtain();
                     msg.what = TimerService.PAUSE_TIMER;
                     try{
@@ -149,7 +156,6 @@ public class TimerActivity extends Activity{
                     timerStatus = TimerState.Paused;
                     controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
                 } else {
-
                     Message msg = Message.obtain();
                     msg.what = TimerService.START_TIMER;
                     try{
@@ -179,6 +185,7 @@ public class TimerActivity extends Activity{
     protected void onStart(){
         super.onStart();
         bindService(timerIntent, timerConnection, Context.BIND_AUTO_CREATE);
+        Log.v("TimerActivity","onStart()");
     }
 
     @Override
@@ -207,11 +214,13 @@ public class TimerActivity extends Activity{
     protected void onStop(){
         super.onStop();
         unbindService(timerConnection);
+        Log.v("TimerActivity","onStop()");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(notificationReceiver);
         Log.v("TimerActivity","onDestory()");
     }
 
@@ -224,13 +233,15 @@ public class TimerActivity extends Activity{
 
     @Override
     protected void onUserLeaveHint(){
-        Message notifyMsg = Message.obtain();
-        notifyMsg.what = TimerService.START_NOTIFICATION;
+        if(timerStatus != TimerState.Stopped){
+            Message notifyMsg = Message.obtain();
+            notifyMsg.what = TimerService.START_NOTIFICATION;
             try{
                 timerMessenger.send(notifyMsg);
             } catch (RemoteException e){
                 Log.e("RemoteException",e.toString());
             }
-        Log.v("onUserLeaveHint()","notification message sent");
+            Log.v("onUserLeaveHint()","notification message sent");
+        }
     }
 }
