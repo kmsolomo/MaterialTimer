@@ -30,7 +30,7 @@ public class TimerActivity extends Activity{
     public static final int UPDATE_TIME = 1;
     public static final int UPDATE_STATE = 2;
 
-    private FloatingActionButton controlButton;
+    private FloatingActionButton controlButton,stopButton;
     private ImageButton settingsButton;
     private TextView timerView;
     private TimerState timerStatus = TimerState.Stopped;
@@ -95,10 +95,10 @@ public class TimerActivity extends Activity{
         if(timerStatus != TimerState.Stopped){
             if(state){
                 timerStatus = TimerState.Running;
-                controlButton.setImageResource(R.drawable.ic_pause_44dp);
+                controlButton.setImageResource(R.drawable.ic_pause_24dp);
             } else {
                 timerStatus = TimerState.Paused;
-                controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
+                controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
             }
         }
 
@@ -111,7 +111,8 @@ public class TimerActivity extends Activity{
         setContentView(R.layout.activity_main);
 
         //Bind Views
-        controlButton = findViewById(R.id.floatingActionButton);
+        controlButton = findViewById(R.id.playPauseButton);
+        stopButton = findViewById(R.id.stopButton);
         timerView = findViewById(R.id.timerTextView);
         settingsButton = findViewById(R.id.SettingsButton);
 
@@ -131,10 +132,10 @@ public class TimerActivity extends Activity{
         if(savedInstanceState != null){
             if(savedInstanceState.get("TIMER_STATE") == TimerState.Running){
                 timerStatus = TimerState.Running;
-                controlButton.setImageResource(R.drawable.ic_pause_44dp);
+                controlButton.setImageResource(R.drawable.ic_pause_24dp);
             } else if(savedInstanceState.get("TIMER_STATE") == TimerState.Paused){
                 timerStatus = TimerState.Paused;
-                controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
+                controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
             }
             timerView.setText(savedInstanceState.getString("CURRENT_TIME"));
             Log.v("TimerActivity","onCreate restoring state");
@@ -154,7 +155,7 @@ public class TimerActivity extends Activity{
                         Log.v("RemoteException",e.toString());
                     }
                     timerStatus = TimerState.Paused;
-                    controlButton.setImageResource(R.drawable.ic_play_arrow_44dp);
+                    controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
                 } else {
                     Message msg = Message.obtain();
                     msg.what = TimerService.START_TIMER;
@@ -166,7 +167,7 @@ public class TimerActivity extends Activity{
                     }
 
                     timerStatus = TimerState.Running;
-                    controlButton.setImageResource(R.drawable.ic_pause_44dp);
+                    controlButton.setImageResource(R.drawable.ic_pause_24dp);
                 }
             }
         });
@@ -186,16 +187,6 @@ public class TimerActivity extends Activity{
         super.onStart();
         bindService(timerIntent, timerConnection, Context.BIND_AUTO_CREATE);
         Log.v("TimerActivity","onStart()");
-    }
-
-    @Override
-    protected void onResume(){
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause(){
-        super.onPause();
     }
 
     @Override

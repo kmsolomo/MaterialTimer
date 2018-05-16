@@ -136,7 +136,7 @@ public class TimerService extends Service{
                         resetTimer();
                         break;
                     case SCREEN_OFF:
-                        screenOff();
+                        screenOffNotification();
                         break;
                     default:
                         break;
@@ -195,7 +195,6 @@ public class TimerService extends Service{
         } else {
             if(notification){
                 stopNotification();
-                notification = false;
             }
             updateTimer(getTime());
         }
@@ -234,6 +233,7 @@ public class TimerService extends Service{
                 stopForeground(true);
                 notifUtil.hideTimer();
             }
+            notification = false;
         }
     }
 
@@ -251,7 +251,7 @@ public class TimerService extends Service{
         return Long.valueOf(value) * 60000;
     }
 
-    private void screenOff(){
+    private void screenOffNotification(){
         if(!connected && sessionStart && !notification){
             startNotification();
         }
@@ -314,23 +314,11 @@ public class TimerService extends Service{
         }
     }
 
-    //TODO: stop dependent on timer state
     private void resetTimer(){
-        if(connected){
-            timer = Timer.Work;
-            sessionStart = false;
-            customFlag = false;
-            refreshTimers();
-            notifUtil.hideTimer();
-        } else {
-            timer = Timer.Work;
-            sessionStart = false;
-            customFlag = false;
-            refreshTimers();
-            notifUtil.hideTimer();
-            workerThread.quit();
-            stopSelf();
-        }
+        notifUtil.hideTimer();
+        refreshTimers();
+        workerThread.quit();
+        stopSelf();
     }
 
     private void startCustomTimer(long timeLeft){
@@ -364,7 +352,6 @@ public class TimerService extends Service{
                     default:
                         break;
                 }
-
             }
         }.start();
 
@@ -375,16 +362,19 @@ public class TimerService extends Service{
 
         if(notification){
             notifUtil.updateNotification(currentTime);
+            Log.v("TimerService","updateNotification");
         } else {
-            Message updateUI = Message.obtain();
-            updateUI.what = TimerActivity.UPDATE_TIME;
-            updateUI.obj = currentTime;
-            try{
-                uiMessenger.send(updateUI);
-            } catch(RemoteException e){
-                Log.e("RemoteException",e.toString());
+            if(uiMessenger != null){
+                Message updateUI = Message.obtain();
+                updateUI.what = TimerActivity.UPDATE_TIME;
+                updateUI.obj = currentTime;
+                try{
+                    uiMessenger.send(updateUI);
+                } catch(RemoteException e){
+                    Log.e("RemoteException",e.toString());
+                }
+                Log.v("TimerService","updateTimer");
             }
-            Log.v("TimerService","updateTimer");
         }
     }
 

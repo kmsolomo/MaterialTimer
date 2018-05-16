@@ -51,14 +51,14 @@ public class NotificationUtil {
         PendingIntent stopPendingIntent = PendingIntent.getBroadcast(mainContext,0,stopIntent,PendingIntent.FLAG_UPDATE_CURRENT);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            Icon pauseIcon = Icon.createWithResource(mainContext, R.drawable.ic_alarm);
+            Icon pauseIcon = Icon.createWithResource(mainContext, R.drawable.ic_alarm_24dp);
             startAction = new Notification.Action.Builder(pauseIcon,"START",startPendingIntent).build();
             pauseAction = new Notification.Action.Builder(pauseIcon, "PAUSE", pausePendingIntent).build();
             stopAction = new Notification.Action.Builder(pauseIcon, "STOP", stopPendingIntent).build();
         } else {
-            startAction = new Notification.Action.Builder(R.drawable.ic_alarm,"START",startPendingIntent).build();
-            pauseAction = new Notification.Action.Builder(R.drawable.ic_alarm, "PAUSE", pausePendingIntent).build();
-            stopAction = new Notification.Action.Builder(R.drawable.ic_alarm, "STOP", stopPendingIntent).build();
+            startAction = new Notification.Action.Builder(R.drawable.ic_alarm_24dp,"START",startPendingIntent).build();
+            pauseAction = new Notification.Action.Builder(R.drawable.ic_alarm_24dp, "PAUSE", pausePendingIntent).build();
+            stopAction = new Notification.Action.Builder(R.drawable.ic_alarm_24dp, "STOP", stopPendingIntent).build();
         }
 
     }
@@ -74,7 +74,7 @@ public class NotificationUtil {
 
         //Change available action options depending on state
         if(timerRunning){
-            builder.setSmallIcon(R.drawable.ic_alarm)
+            builder.setSmallIcon(R.drawable.ic_alarm_24dp)
                     .setAutoCancel(true)
                     .setContentIntent(timerPendingIntent)
                     .setContentTitle("Testing Title")
@@ -85,7 +85,7 @@ public class NotificationUtil {
                     .addAction(stopAction)
                     .setCategory(Notification.CATEGORY_ALARM);
         } else {
-            builder.setSmallIcon(R.drawable.ic_alarm)
+            builder.setSmallIcon(R.drawable.ic_alarm_24dp)
                     .setAutoCancel(true)
                     .setContentIntent(timerPendingIntent)
                     .setContentTitle("Testing Title")
