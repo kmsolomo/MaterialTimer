@@ -51,9 +51,10 @@ public class TimerService extends Service{
     public static final String ACTION_RESET = "reset";
     public static final int START_TIMER = 1;
     public static final int PAUSE_TIMER = 2;
-    public static final int REGISTER_CLIENT = 3;
-    public static final int START_NOTIFICATION = 4;
-    public static final int STOP_NOTIFICATION = 5;
+    public static final int RESET_TIMER = 3;
+    public static final int REGISTER_CLIENT = 4;
+    public static final int START_NOTIFICATION = 5;
+    public static final int STOP_NOTIFICATION = 6;
 
     /**
      * Handler for incoming messages from clients.
@@ -71,6 +72,9 @@ public class TimerService extends Service{
                     break;
                 case PAUSE_TIMER:
                     pauseTimer();
+                    break;
+                case RESET_TIMER:
+                    resetTimer();
                     break;
                 case REGISTER_CLIENT:
                     uiMessenger = msg.replyTo;
@@ -133,7 +137,7 @@ public class TimerService extends Service{
                         notifUtil.updateNotification(formatTime(getTime()));
                         break;
                     case ACTION_RESET:
-                        resetTimer();
+                        stopTimer();
                         break;
                     case SCREEN_OFF:
                         screenOffNotification();
@@ -314,11 +318,21 @@ public class TimerService extends Service{
         }
     }
 
-    private void resetTimer(){
+    private void stopTimer(){
         notifUtil.hideTimer();
         refreshTimers();
         workerThread.quit();
         stopSelf();
+    }
+
+    private void resetTimer(){
+        if(running){
+            pauseTimer();
+        }
+        timer = Timer.Work;
+        sessionStart = false;
+        refreshTimers();
+        synchronizeClient();
     }
 
     private void startCustomTimer(long timeLeft){

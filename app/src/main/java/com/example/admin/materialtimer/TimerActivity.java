@@ -1,5 +1,8 @@
 package com.example.admin.materialtimer;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -18,6 +21,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.BounceInterpolator;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -37,6 +42,7 @@ public class TimerActivity extends Activity{
     private Intent timerIntent;
     private Messenger timerMessenger;
     private BroadcastReceiver notificationReceiver;
+    private boolean animation;
     private final int THEME_REQUEST_CODE = 1;
 
     private ServiceConnection timerConnection = new ServiceConnection(){
@@ -117,6 +123,7 @@ public class TimerActivity extends Activity{
         settingsButton = findViewById(R.id.SettingsButton);
 
         PreferenceManager.setDefaultValues(this,R.xml.preferences,false);
+        animation = false;
 
         //insures service persists bound lifecycle
         timerIntent = new Intent(TimerActivity.this, TimerService.class);
@@ -141,6 +148,88 @@ public class TimerActivity extends Activity{
             Log.v("TimerActivity","onCreate restoring state");
         }
 
+        float initialX = controlButton.getTranslationX();
+
+        //Move playPauseButton into functional position
+        ObjectAnimator slideOut = ObjectAnimator.ofFloat(controlButton,"translationX",initialX-100f);
+        slideOut.setDuration(500);
+        slideOut.setInterpolator(new AccelerateDecelerateInterpolator());
+
+        //Fade in stop button
+        ObjectAnimator fadeIn = ObjectAnimator.ofFloat(stopButton,"alpha",0,1);
+        fadeIn.setDuration(500);
+        fadeIn.setInterpolator(new AccelerateDecelerateInterpolator());
+
+        //Move stopButton into functional position
+        ObjectAnimator stopButtonMoveOut = ObjectAnimator.ofFloat(stopButton,"translationX",initialX+100f);
+        stopButtonMoveOut.setDuration(500);
+        stopButtonMoveOut.setInterpolator(new AccelerateDecelerateInterpolator());
+
+
+
+        //TODO: add stopButton visibility and x animation to this set
+        final AnimatorSet animatorOut = new AnimatorSet();
+        animatorOut.playTogether(slideOut,fadeIn,stopButtonMoveOut);
+
+        animatorOut.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+                stopButton.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {
+
+            }
+        });
+
+        //Restore initial state
+        ObjectAnimator slideIn = ObjectAnimator.ofFloat(controlButton,"translationX",initialX);
+        slideIn.setDuration(500);
+        slideIn.setInterpolator(new AccelerateDecelerateInterpolator());
+
+        ObjectAnimator stopButtonFadeOut = ObjectAnimator.ofFloat(stopButton,"alpha",1,0);
+        stopButtonFadeOut.setDuration(500);
+        stopButtonFadeOut.setInterpolator(new AccelerateDecelerateInterpolator());
+
+        ObjectAnimator stopButtonMoveIn = ObjectAnimator.ofFloat(stopButton,"translationX",initialX);
+        stopButtonFadeOut.setDuration(500);
+        stopButtonFadeOut.setInterpolator(new AccelerateDecelerateInterpolator());
+
+        final AnimatorSet animatorIn = new AnimatorSet();
+        animatorIn.playTogether(slideIn,stopButtonFadeOut,stopButtonMoveIn);
+
+        animatorIn.addListener(new Animator.AnimatorListener(){
+            @Override
+            public void onAnimationStart(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                stopButton.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {
+
+            }
+        });
         //Floating action button
         controlButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -152,7 +241,7 @@ public class TimerActivity extends Activity{
                         timerMessenger.send(msg);
                         Log.v("onClick","PAUSE_TIMER");
                     } catch(RemoteException e) {
-                        Log.v("RemoteException",e.toString());
+                        Log.e("RemoteException",e.toString());
                     }
                     timerStatus = TimerState.Paused;
                     controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
@@ -163,12 +252,34 @@ public class TimerActivity extends Activity{
                         timerMessenger.send(msg);
                         Log.v("onClick","START_TIMER");
                     } catch(RemoteException e) {
-                        Log.v("RemoteException",e.toString());
+                        Log.e("RemoteException",e.toString());
                     }
 
+                    if(!animation){
+                        animatorOut.start();
+                        animation = true;
+                    }
                     timerStatus = TimerState.Running;
                     controlButton.setImageResource(R.drawable.ic_pause_24dp);
                 }
+            }
+        });
+
+        //Functions to end current timer and reset UI to stopped state
+        stopButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                Message stopMsg = Message.obtain();
+                stopMsg.what = TimerService.RESET_TIMER;
+                try{
+                    timerMessenger.send(stopMsg);
+                } catch(RemoteException e){
+                    Log.e("RemoteException",e.toString());
+                }
+                animatorIn.start();
+                animation = false;
+                timerStatus = TimerState.Stopped;
+                controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
             }
         });
 

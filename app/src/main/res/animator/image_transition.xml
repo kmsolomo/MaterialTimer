@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<set xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <objectAnimator
-        android:propertyName="alpha"
-        android:duration="1000"
-        android:valueFrom="1.0"
-        android:valueTo="0"
-        android:startOffset="0"/>
-
-</set>
+<objectAnimator
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:propertyName="translateX"
+    android:duration="1000"
+    android:valueFrom="1.0"
+    android:valueTo="0"
+    android:startOffset="0" />
