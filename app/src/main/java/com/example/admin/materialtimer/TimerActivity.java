@@ -22,7 +22,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.BounceInterpolator;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -42,7 +41,7 @@ public class TimerActivity extends Activity{
     private Intent timerIntent;
     private Messenger timerMessenger;
     private BroadcastReceiver notificationReceiver;
-    private boolean animation;
+    private boolean animation = false;
     private AnimatorSet animatorOut,animatorIn;
     private final int THEME_REQUEST_CODE = 1;
 
@@ -113,23 +112,20 @@ public class TimerActivity extends Activity{
 
     private void initAnimations(float initialX){
 
-        //Move playPauseButton into functional position
+        //Move to started position
         ObjectAnimator slideOut = ObjectAnimator.ofFloat(controlButton,"translationX",initialX-100f);
         slideOut.setDuration(500);
         slideOut.setInterpolator(new AccelerateDecelerateInterpolator());
 
-        //Fade in stop button
         ObjectAnimator fadeIn = ObjectAnimator.ofFloat(stopButton,"alpha",0,1);
         fadeIn.setDuration(500);
         fadeIn.setInterpolator(new AccelerateDecelerateInterpolator());
 
-        //Move stopButton into functional position
         ObjectAnimator stopButtonMoveOut = ObjectAnimator.ofFloat(stopButton,"translationX",initialX+100f);
         stopButtonMoveOut.setDuration(500);
         stopButtonMoveOut.setInterpolator(new AccelerateDecelerateInterpolator());
 
-
-        //Restore initial state
+        //Move back to original position
         ObjectAnimator slideIn = ObjectAnimator.ofFloat(controlButton,"translationX",initialX);
         slideIn.setDuration(500);
         slideIn.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -142,13 +138,14 @@ public class TimerActivity extends Activity{
         stopButtonFadeOut.setDuration(500);
         stopButtonFadeOut.setInterpolator(new AccelerateDecelerateInterpolator());
 
+        //Setup animation sequence
         animatorOut = new AnimatorSet();
+        animatorOut.addListener(animOutListener);
         animatorOut.playTogether(slideOut,fadeIn,stopButtonMoveOut);
 
-
         animatorIn = new AnimatorSet();
+        animatorIn.addListener(animInListener);
         animatorIn.playTogether(slideIn,stopButtonFadeOut,stopButtonMoveIn);
-
     }
 
     private View.OnClickListener playPauseListener = new View.OnClickListener(){
@@ -214,6 +211,7 @@ public class TimerActivity extends Activity{
         @Override
         public void onAnimationStart(Animator animator) {
             stopButton.setVisibility(View.VISIBLE);
+            Log.v("animatorOutListener","set Visible");
         }
         @Override
         public void onAnimationEnd(Animator animator) { }
@@ -259,11 +257,11 @@ public class TimerActivity extends Activity{
                 controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
             }
             timerView.setText(savedInstanceState.getString("CURRENT_TIME"));
+            //get animation state
             Log.v("TimerActivity","onCreate restoring state");
         }
 
         PreferenceManager.setDefaultValues(this,R.xml.preferences,false);
-        animation = false;
 
         //insures service persists bound lifecycle
         timerIntent = new Intent(TimerActivity.this, TimerService.class);
@@ -274,13 +272,19 @@ public class TimerActivity extends Activity{
         IntentFilter notificationFilter = new IntentFilter();
         notificationFilter.addAction(Intent.ACTION_SCREEN_OFF);
         registerReceiver(notificationReceiver,notificationFilter);
+
+        //link OnClickListeners
+        controlButton.setOnClickListener(playPauseListener);
+        stopButton.setOnClickListener(stopButtonListener);
+        settingsButton.setOnClickListener(settingsListener);
+
+        initAnimations(controlButton.getTranslationX());
     }
 
     @Override
     protected void onStart(){
         super.onStart();
         bindService(timerIntent, timerConnection, Context.BIND_AUTO_CREATE);
-        initAnimations(controlButton.getTranslationX());
         Log.v("TimerActivity","onStart()");
     }
 
@@ -297,7 +301,7 @@ public class TimerActivity extends Activity{
         //save view state
 
         Log.v("TimerActivity","onSaveInstanceState");
-}
+    }
 
     @Override
     protected void onStop(){
