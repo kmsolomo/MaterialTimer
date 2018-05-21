@@ -43,6 +43,7 @@ public class TimerActivity extends Activity{
     private Messenger timerMessenger;
     private BroadcastReceiver notificationReceiver;
     private boolean animation;
+    private AnimatorSet animatorOut,animatorIn;
     private final int THEME_REQUEST_CODE = 1;
 
     private ServiceConnection timerConnection = new ServiceConnection(){
@@ -110,45 +111,7 @@ public class TimerActivity extends Activity{
 
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState){
-        super.onCreate(savedInstanceState);
-        ThemeUtility.themeCheck(this);
-        setContentView(R.layout.activity_main);
-
-        //Bind Views
-        controlButton = findViewById(R.id.playPauseButton);
-        stopButton = findViewById(R.id.stopButton);
-        timerView = findViewById(R.id.timerTextView);
-        settingsButton = findViewById(R.id.SettingsButton);
-
-        PreferenceManager.setDefaultValues(this,R.xml.preferences,false);
-        animation = false;
-
-        //insures service persists bound lifecycle
-        timerIntent = new Intent(TimerActivity.this, TimerService.class);
-        startService(timerIntent);
-
-        //Broadcast receiver to send notification when screen off
-        notificationReceiver = new NotificationReceiver();
-        IntentFilter notificationFilter = new IntentFilter();
-        notificationFilter.addAction(Intent.ACTION_SCREEN_OFF);
-        registerReceiver(notificationReceiver,notificationFilter);
-
-        //Restore state
-        if(savedInstanceState != null){
-            if(savedInstanceState.get("TIMER_STATE") == TimerState.Running){
-                timerStatus = TimerState.Running;
-                controlButton.setImageResource(R.drawable.ic_pause_24dp);
-            } else if(savedInstanceState.get("TIMER_STATE") == TimerState.Paused){
-                timerStatus = TimerState.Paused;
-                controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
-            }
-            timerView.setText(savedInstanceState.getString("CURRENT_TIME"));
-            Log.v("TimerActivity","onCreate restoring state");
-        }
-
-        float initialX = controlButton.getTranslationX();
+    private void initAnimations(float initialX){
 
         //Move playPauseButton into functional position
         ObjectAnimator slideOut = ObjectAnimator.ofFloat(controlButton,"translationX",initialX-100f);
@@ -166,33 +129,6 @@ public class TimerActivity extends Activity{
         stopButtonMoveOut.setInterpolator(new AccelerateDecelerateInterpolator());
 
 
-
-        //TODO: add stopButton visibility and x animation to this set
-        final AnimatorSet animatorOut = new AnimatorSet();
-        animatorOut.playTogether(slideOut,fadeIn,stopButtonMoveOut);
-
-        animatorOut.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animator) {
-                stopButton.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animator) {
-
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animator) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animator) {
-
-            }
-        });
-
         //Restore initial state
         ObjectAnimator slideIn = ObjectAnimator.ofFloat(controlButton,"translationX",initialX);
         slideIn.setDuration(500);
@@ -206,97 +142,145 @@ public class TimerActivity extends Activity{
         stopButtonFadeOut.setDuration(500);
         stopButtonFadeOut.setInterpolator(new AccelerateDecelerateInterpolator());
 
-        final AnimatorSet animatorIn = new AnimatorSet();
+        animatorOut = new AnimatorSet();
+        animatorOut.playTogether(slideOut,fadeIn,stopButtonMoveOut);
+
+
+        animatorIn = new AnimatorSet();
         animatorIn.playTogether(slideIn,stopButtonFadeOut,stopButtonMoveIn);
 
-        animatorIn.addListener(new Animator.AnimatorListener(){
-            @Override
-            public void onAnimationStart(Animator animator) {
+    }
 
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animator) {
-                stopButton.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animator) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animator) {
-
-            }
-        });
-        //Floating action button
-        controlButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(timerStatus == TimerState.Running){
-                    Message msg = Message.obtain();
-                    msg.what = TimerService.PAUSE_TIMER;
-                    try{
-                        timerMessenger.send(msg);
-                        Log.v("onClick","PAUSE_TIMER");
-                    } catch(RemoteException e) {
-                        Log.e("RemoteException",e.toString());
-                    }
-                    timerStatus = TimerState.Paused;
-                    controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
-                } else {
-                    Message msg = Message.obtain();
-                    msg.what = TimerService.START_TIMER;
-                    try{
-                        timerMessenger.send(msg);
-                        Log.v("onClick","START_TIMER");
-                    } catch(RemoteException e) {
-                        Log.e("RemoteException",e.toString());
-                    }
-
-                    if(!animation){
-                        animatorOut.start();
-                        animation = true;
-                    }
-                    timerStatus = TimerState.Running;
-                    controlButton.setImageResource(R.drawable.ic_pause_24dp);
-                }
-            }
-        });
-
-        //Functions to end current timer and reset UI to stopped state
-        stopButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view){
-                Message stopMsg = Message.obtain();
-                stopMsg.what = TimerService.RESET_TIMER;
+    private View.OnClickListener playPauseListener = new View.OnClickListener(){
+        @Override
+        public void onClick(View view) {
+            if(timerStatus == TimerState.Running){
+                Message msg = Message.obtain();
+                msg.what = TimerService.PAUSE_TIMER;
                 try{
-                    timerMessenger.send(stopMsg);
-                } catch(RemoteException e){
+                    timerMessenger.send(msg);
+                    Log.v("onClick","PAUSE_TIMER");
+                } catch(RemoteException e) {
                     Log.e("RemoteException",e.toString());
                 }
-                animatorIn.start();
-                animation = false;
-                timerStatus = TimerState.Stopped;
+                timerStatus = TimerState.Paused;
+                controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
+            } else {
+                Message msg = Message.obtain();
+                msg.what = TimerService.START_TIMER;
+                try{
+                    timerMessenger.send(msg);
+                    Log.v("onClick","START_TIMER");
+                } catch(RemoteException e) {
+                    Log.e("RemoteException",e.toString());
+                }
+
+                if(!animation){
+                    animatorOut.start();
+                    animation = true;
+                }
+                timerStatus = TimerState.Running;
+                controlButton.setImageResource(R.drawable.ic_pause_24dp);
+            }
+        }
+    };
+
+    private View.OnClickListener stopButtonListener = new View.OnClickListener(){
+        @Override
+        public void onClick(View view){
+            Message stopMsg = Message.obtain();
+            stopMsg.what = TimerService.RESET_TIMER;
+            try{
+                timerMessenger.send(stopMsg);
+            } catch(RemoteException e){
+                Log.e("RemoteException",e.toString());
+            }
+            animatorIn.start();
+            animation = false;
+            timerStatus = TimerState.Stopped;
+            controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
+            }
+    };
+
+    private View.OnClickListener settingsListener = new View.OnClickListener(){
+        @Override
+        public void onClick(View view){
+            Intent data = new Intent(TimerActivity.this,SettingsActivity.class);
+            startActivityForResult(data,THEME_REQUEST_CODE);
+        }
+    };
+
+    private Animator.AnimatorListener animOutListener = new Animator.AnimatorListener() {
+        @Override
+        public void onAnimationStart(Animator animator) {
+            stopButton.setVisibility(View.VISIBLE);
+        }
+        @Override
+        public void onAnimationEnd(Animator animator) { }
+        @Override
+        public void onAnimationCancel(Animator animator) { }
+        @Override
+        public void onAnimationRepeat(Animator animator) { }
+    };
+
+    private Animator.AnimatorListener animInListener = new Animator.AnimatorListener() {
+        @Override
+        public void onAnimationStart(Animator animator) { }
+        @Override
+        public void onAnimationEnd(Animator animator) {
+            stopButton.setVisibility(View.GONE);
+        }
+        @Override
+        public void onAnimationCancel(Animator animator) { }
+        @Override
+        public void onAnimationRepeat(Animator animator) { }
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
+        ThemeUtility.themeCheck(this);
+        setContentView(R.layout.activity_main);
+
+        //Bind Views
+        controlButton = findViewById(R.id.playPauseButton);
+        stopButton = findViewById(R.id.stopButton);
+        timerView = findViewById(R.id.timerTextView);
+        settingsButton = findViewById(R.id.SettingsButton);
+
+        //TODO: Animation state view position
+        //Restore state
+        if(savedInstanceState != null){
+            if(savedInstanceState.get("TIMER_STATE") == TimerState.Running){
+                timerStatus = TimerState.Running;
+                controlButton.setImageResource(R.drawable.ic_pause_24dp);
+            } else if(savedInstanceState.get("TIMER_STATE") == TimerState.Paused){
+                timerStatus = TimerState.Paused;
                 controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
             }
-        });
+            timerView.setText(savedInstanceState.getString("CURRENT_TIME"));
+            Log.v("TimerActivity","onCreate restoring state");
+        }
 
-        //Settings Button
-        settingsButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view){
-                Intent data = new Intent(TimerActivity.this,SettingsActivity.class);
-                startActivityForResult(data,THEME_REQUEST_CODE);
-            }
-        });
+        PreferenceManager.setDefaultValues(this,R.xml.preferences,false);
+        animation = false;
+
+        //insures service persists bound lifecycle
+        timerIntent = new Intent(TimerActivity.this, TimerService.class);
+        startService(timerIntent);
+
+        //Broadcast receiver to send notification when screen off
+        notificationReceiver = new NotificationReceiver();
+        IntentFilter notificationFilter = new IntentFilter();
+        notificationFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(notificationReceiver,notificationFilter);
     }
 
     @Override
     protected void onStart(){
         super.onStart();
         bindService(timerIntent, timerConnection, Context.BIND_AUTO_CREATE);
+        initAnimations(controlButton.getTranslationX());
         Log.v("TimerActivity","onStart()");
     }
 
@@ -309,6 +293,9 @@ public class TimerActivity extends Activity{
             outState.putSerializable("TIMER_STATE",timerStatus);
         }
         outState.putString("CURRENT_TIME",timerView.getText().toString());
+
+        //save view state
+
         Log.v("TimerActivity","onSaveInstanceState");
 }
 
