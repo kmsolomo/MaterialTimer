@@ -115,7 +115,6 @@ public class TimerService extends Service{
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
-
         if(intent != null){
             if(intent.getAction() != null){
                 switch(intent.getAction()){
@@ -194,18 +193,20 @@ public class TimerService extends Service{
     private void synchronizeClient(){
         //Update UI on initial startup && remove notification when returning to main UI
         connected = true;
+        Message msgState = Message.obtain();
+        msgState.what = TimerActivity.UPDATE_STATE;
+        msgState.obj = running;
+
         if(timer == Timer.Work && !sessionStart){
             updateTimer(convertTime(sharedPref.getInt(WORK_TIME,25)));
+            msgState.arg1 = 0;
         } else {
             if(notification){
                 stopNotification();
             }
             updateTimer(getTime());
+            msgState.arg1 = 1;
         }
-
-        Message msgState = Message.obtain();
-        msgState.what = TimerActivity.UPDATE_STATE;
-        msgState.obj = running;
 
         try{
             uiMessenger.send(msgState);
@@ -281,7 +282,6 @@ public class TimerService extends Service{
         }
         return currentTime;
     }
-
 
     private void startTimer(){
         running = true;
@@ -373,7 +373,6 @@ public class TimerService extends Service{
 
     private void updateTimer(long milliSecondsLeft){
         String currentTime = formatTime(milliSecondsLeft);
-
         if(notification){
             notifUtil.updateNotification(currentTime);
             Log.v("TimerService","updateNotification");

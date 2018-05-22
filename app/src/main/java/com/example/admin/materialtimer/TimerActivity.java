@@ -50,13 +50,13 @@ public class TimerActivity extends Activity{
         public void onServiceConnected(ComponentName className, IBinder service){
             timerMessenger = new Messenger(service);
             synchronizeService();
-            Log.v("MainActivty","onServiceConnected");
+            Log.v("TimerActivity","onServiceConnected");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0){
             timerMessenger = null;
-            Log.v("MainActivty","onServiceDisconnected");
+            Log.v("TimerActivity","onServiceDisconnected");
         }
     };
 
@@ -74,7 +74,7 @@ public class TimerActivity extends Activity{
                     break;
                 case UPDATE_STATE:
                     boolean state = (boolean) message.obj;
-                    stateUpdate(state);
+                    stateUpdate(state,message.arg1);
                     break;
                 default:
                     super.handleMessage(message);
@@ -83,13 +83,10 @@ public class TimerActivity extends Activity{
     }
 
     private void synchronizeService(){
-        //Connect Client to Service
         Messenger uiMessenger = new Messenger(new UIHandler(Looper.getMainLooper()));
-
         Message uiMsg= Message.obtain();
         uiMsg.what = TimerService.REGISTER_CLIENT;
         uiMsg.replyTo = uiMessenger;
-
         try {
             timerMessenger.send(uiMsg);
         } catch (RemoteException e){
@@ -97,17 +94,21 @@ public class TimerActivity extends Activity{
         }
     }
 
-    private void stateUpdate(boolean state){
-        if(timerStatus != TimerState.Stopped){
+    private void stateUpdate(boolean state, int sessionState){
+        if(sessionState == 1){
             if(state){
                 timerStatus = TimerState.Running;
                 controlButton.setImageResource(R.drawable.ic_pause_24dp);
+                Log.v("stateUpdate","inside if");
             } else {
                 timerStatus = TimerState.Paused;
                 controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
+                Log.v("stateUpdate","inside else");
             }
+            animatorOut.start();
+            animation = true;
+            Log.v("stateUpdate","animatorOut.start()");
         }
-
     }
 
     private void initAnimations(float initialX){
@@ -160,6 +161,7 @@ public class TimerActivity extends Activity{
                 } catch(RemoteException e) {
                     Log.e("RemoteException",e.toString());
                 }
+
                 timerStatus = TimerState.Paused;
                 controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
             } else {
@@ -176,6 +178,7 @@ public class TimerActivity extends Activity{
                     animatorOut.start();
                     animation = true;
                 }
+
                 timerStatus = TimerState.Running;
                 controlButton.setImageResource(R.drawable.ic_pause_24dp);
             }
@@ -246,7 +249,15 @@ public class TimerActivity extends Activity{
         timerView = findViewById(R.id.timerTextView);
         settingsButton = findViewById(R.id.SettingsButton);
 
-        //TODO: Animation state view position
+        PreferenceManager.setDefaultValues(this,R.xml.preferences,false);
+
+        //init OnClickListeners
+        controlButton.setOnClickListener(playPauseListener);
+        stopButton.setOnClickListener(stopButtonListener);
+        settingsButton.setOnClickListener(settingsListener);
+
+        initAnimations(controlButton.getTranslationX());
+
         //Restore state
         if(savedInstanceState != null){
             if(savedInstanceState.get("TIMER_STATE") == TimerState.Running){
@@ -257,11 +268,9 @@ public class TimerActivity extends Activity{
                 controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
             }
             timerView.setText(savedInstanceState.getString("CURRENT_TIME"));
-            //get animation state
+            animation = savedInstanceState.getBoolean("ANIMATION_STATE");
             Log.v("TimerActivity","onCreate restoring state");
         }
-
-        PreferenceManager.setDefaultValues(this,R.xml.preferences,false);
 
         //insures service persists bound lifecycle
         timerIntent = new Intent(TimerActivity.this, TimerService.class);
@@ -272,13 +281,6 @@ public class TimerActivity extends Activity{
         IntentFilter notificationFilter = new IntentFilter();
         notificationFilter.addAction(Intent.ACTION_SCREEN_OFF);
         registerReceiver(notificationReceiver,notificationFilter);
-
-        //link OnClickListeners
-        controlButton.setOnClickListener(playPauseListener);
-        stopButton.setOnClickListener(stopButtonListener);
-        settingsButton.setOnClickListener(settingsListener);
-
-        initAnimations(controlButton.getTranslationX());
     }
 
     @Override
@@ -297,9 +299,7 @@ public class TimerActivity extends Activity{
             outState.putSerializable("TIMER_STATE",timerStatus);
         }
         outState.putString("CURRENT_TIME",timerView.getText().toString());
-
-        //save view state
-
+        outState.putBoolean("ANIMATION_STATE",animation);
         Log.v("TimerActivity","onSaveInstanceState");
     }
 
