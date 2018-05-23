@@ -337,4 +337,19 @@ public class TimerActivity extends Activity{
             Log.v("onUserLeaveHint()","notification message sent");
         }
     }
+
+    @Override
+    public void onBackPressed(){
+        if(timerStatus != TimerState.Stopped){
+            Message notifyMsg = Message.obtain();
+            notifyMsg.what = TimerService.START_NOTIFICATION;
+            try{
+                timerMessenger.send(notifyMsg);
+            } catch (RemoteException e){
+                Log.e("RemoteException",e.toString());
+            }
+            Log.v("onUserLeaveHint()","notification message sent");
+        }
+        finish();
+    }
 }

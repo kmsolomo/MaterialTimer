@@ -115,11 +115,22 @@ public class TimerService extends Service{
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
+
+        if(intent == null){
+            Log.v("onStartCommand","INTENT NULL");
+        }
+
         if(intent != null){
+
             if(intent.getAction() != null){
                 switch(intent.getAction()){
                     case TIMER_RESTART:
-                        if(running)startTimer();
+                        //if(running)startTimer();
+                        if(running){
+                            startTimer();
+                        } else {
+                            pauseTimer();
+                        }
                         break;
                     case ACTION_START:
                         startTimer();
@@ -127,6 +138,7 @@ public class TimerService extends Service{
                                 notifUtil.buildNotification(formatTime(getTime()),
                                 true));
                         notifUtil.updateNotification(formatTime(getTime()));
+                        Log.v("onStartCommand","ACTION_START");
                         break;
                     case ACTION_PAUSE:
                         pauseTimer();
@@ -134,6 +146,7 @@ public class TimerService extends Service{
                                         notifUtil.buildNotification(formatTime(getTime()),
                                                 false));
                         notifUtil.updateNotification(formatTime(getTime()));
+                        Log.v("onStartCommand","ACTION_PAUSE");
                         break;
                     case ACTION_RESET:
                         stopTimer();
@@ -175,10 +188,7 @@ public class TimerService extends Service{
 
     @Override
     public void onTaskRemoved(Intent intent){
-        /**
-         * if timer is paused save state and restart in paused state
-         * else if timer is running pause and restart
-        */
+
         if(running){
             pauseTimer();
             running = true;
