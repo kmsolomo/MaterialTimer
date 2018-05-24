@@ -111,40 +111,36 @@ public class TimerService extends Service{
         timerHandler = new Handler(workerThread.getLooper());
         timerMessenger = new Messenger(new ServiceHandler(workerThread.getLooper()));
         refreshTimers();
+        Log.v("TimerService","onCreate");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
 
         if(intent == null){
-            Log.v("onStartCommand","INTENT NULL");
-        }
-
-        if(intent != null){
-
+            Log.v("onStartCommand","Restore state");
+            restoreTimerState();
+        } else {
             if(intent.getAction() != null){
                 switch(intent.getAction()){
                     case TIMER_RESTART:
+                        Log.v("onStartCommand","TIMER_RESTART");
                         //if(running)startTimer();
-                        if(running){
-                            startTimer();
-                        } else {
-                            pauseTimer();
-                        }
+                        restoreTimerState();
                         break;
                     case ACTION_START:
                         startTimer();
                         startForeground(NotificationUtil.NOTIFICATION_ID,
                                 notifUtil.buildNotification(formatTime(getTime()),
-                                true));
+                                        true));
                         notifUtil.updateNotification(formatTime(getTime()));
                         Log.v("onStartCommand","ACTION_START");
                         break;
                     case ACTION_PAUSE:
                         pauseTimer();
                         startForeground(NotificationUtil.NOTIFICATION_ID,
-                                        notifUtil.buildNotification(formatTime(getTime()),
-                                                false));
+                                notifUtil.buildNotification(formatTime(getTime()),
+                                        false));
                         notifUtil.updateNotification(formatTime(getTime()));
                         Log.v("onStartCommand","ACTION_PAUSE");
                         break;
@@ -157,9 +153,13 @@ public class TimerService extends Service{
                     default:
                         break;
                 }
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putBoolean("running",running);
+                editor.apply();
             }
         }
-        return super.onStartCommand(intent, flags, startId);
+        //return super.onStartCommand(intent, flags, startId);
+        return START_NOT_STICKY;
     }
 
     @Override
@@ -193,11 +193,62 @@ public class TimerService extends Service{
             pauseTimer();
             running = true;
         }
+
+        //save timer state
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean("sessionStart",sessionStart);
+        editor.putBoolean("customFlag",customFlag);
+        editor.putBoolean("connected",connected);
+        editor.putBoolean("notification",notification);
+        editor.putBoolean("running",running);
+        editor.putInt("sessionCount",sessionCount);
+
+        if(timer == Timer.Work){
+            editor.putInt("currentTimer",0);
+        } else if(timer == Timer.Break){
+            editor.putInt("currentTimer",1);
+        } else {
+            editor.putInt("currentTimer",2);
+        }
+
+        editor.apply();
+
         Intent restartIntent = new Intent(this, TimerReceiver.class);
         restartIntent.setAction(TIMER_RESTART);
         sendBroadcast(restartIntent);
         super.onTaskRemoved(intent);
         Log.v("TimerService","onTaskRemoved");
+    }
+
+    private void restoreTimerState(){
+        sessionStart = sharedPref.getBoolean("sessionStart",false);
+        customFlag = sharedPref.getBoolean("customFlag",false);
+        connected = sharedPref.getBoolean("connected",false);
+        notification = sharedPref.getBoolean("notification",false);
+        running = sharedPref.getBoolean("running",false);
+        sessionCount = sharedPref.getInt("sessionCount",0);
+
+        int timerState = sharedPref.getInt("currentTimer",0);
+        if(timerState == 0){
+            timer = Timer.Work;
+        } else if(timerState == 1){
+            timer = Timer.Break;
+        } else{
+            timer = Timer.LongBreak;
+        }
+
+        if(running){
+            startForeground(NotificationUtil.NOTIFICATION_ID,
+                    notifUtil.buildNotification(formatTime(getTime()),
+                            true));
+            notifUtil.updateNotification(formatTime(getTime()));
+            startTimer();
+        } else {
+            startForeground(NotificationUtil.NOTIFICATION_ID,
+                    notifUtil.buildNotification(formatTime(getTime()),
+                            false));
+            notifUtil.updateNotification(formatTime(getTime()));
+        }
     }
 
     private void synchronizeClient(){
@@ -329,6 +380,9 @@ public class TimerService extends Service{
     }
 
     private void stopTimer(){
+        if(running){
+            pauseTimer();
+        }
         notifUtil.hideTimer();
         refreshTimers();
         workerThread.quit();
