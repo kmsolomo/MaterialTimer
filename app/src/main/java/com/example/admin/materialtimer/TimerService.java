@@ -116,33 +116,27 @@ public class TimerService extends Service{
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
-
         if(intent == null){
-            Log.v("onStartCommand","Restore state");
+            Log.v("onStartCommand","intent null");
             restoreTimerState();
         } else {
             if(intent.getAction() != null){
-                restoreTimerState();
                 switch(intent.getAction()){
                     case TIMER_RESTART:
                         Log.v("onStartCommand","TIMER_RESTART");
-                        if(running)startTimer();
-                        //restoreTimerState();
+                        //if(running)startTimer();
+                        restoreTimerState();
                         break;
                     case ACTION_START:
-                        startForeground(NotificationUtil.NOTIFICATION_ID,
-                                notifUtil.buildNotification(formatTime(getTime()),
-                                        true));
-                        notifUtil.updateNotification(formatTime(getTime()));
                         startTimer();
+                        notifUtil.buildNotification(formatTime(getTime()),true);
+                        notifUtil.updateNotification(formatTime(getTime()));
                         Log.v("onStartCommand","ACTION_START");
                         break;
                     case ACTION_PAUSE:
-                        startForeground(NotificationUtil.NOTIFICATION_ID,
-                                notifUtil.buildNotification(formatTime(getTime()),
-                                        false));
-                        notifUtil.updateNotification(formatTime(getTime()));
                         pauseTimer();
+                        notifUtil.buildNotification(formatTime(getTime()),false);
+                        notifUtil.updateNotification(formatTime(getTime()));
                         Log.v("onStartCommand","ACTION_PAUSE");
                         break;
                     case ACTION_RESET:
@@ -154,13 +148,10 @@ public class TimerService extends Service{
                     default:
                         break;
                 }
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putBoolean("running",running);
-                editor.apply();
+                saveTimerState();
             }
         }
-        //return super.onStartCommand(intent, flags, startId);
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     @Override
@@ -184,36 +175,13 @@ public class TimerService extends Service{
     @Override
     public void onDestroy(){
         super.onDestroy();
+        workerThread.quit();
         Log.v("TimerService","onDestroy()");
     }
 
     @Override
     public void onTaskRemoved(Intent intent){
-
-        if(running){
-            pauseTimer();
-            running = true;
-        }
-
-        //save timer state
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putBoolean("sessionStart",sessionStart);
-        editor.putBoolean("customFlag",customFlag);
-        editor.putBoolean("connected",connected);
-        editor.putBoolean("notification",notification);
-        editor.putBoolean("running",running);
-        editor.putInt("sessionCount",sessionCount);
-
-        if(timer == Timer.Work){
-            editor.putInt("currentTimer",0);
-        } else if(timer == Timer.Break){
-            editor.putInt("currentTimer",1);
-        } else {
-            editor.putInt("currentTimer",2);
-        }
-
-        editor.apply();
-
+        saveTimerState();
         Intent restartIntent = new Intent(this, TimerReceiver.class);
         restartIntent.setAction(TIMER_RESTART);
         sendBroadcast(restartIntent);
@@ -243,17 +211,37 @@ public class TimerService extends Service{
                     notifUtil.buildNotification(formatTime(getTime()),
                             true));
             notifUtil.updateNotification(formatTime(getTime()));
-            startTimer();
+            //startTimer();
         } else {
             startForeground(NotificationUtil.NOTIFICATION_ID,
                     notifUtil.buildNotification(formatTime(getTime()),
                             false));
             notifUtil.updateNotification(formatTime(getTime()));
         }
+        Log.v("TimerService","restoreTimerState");
+    }
+
+    private void saveTimerState(){
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean("sessionStart",sessionStart);
+        editor.putBoolean("customFlag",customFlag);
+        editor.putBoolean("connected",connected);
+        editor.putBoolean("notification",notification);
+        editor.putBoolean("running",running);
+        editor.putInt("sessionCount",sessionCount);
+
+        if(timer == Timer.Work){
+            editor.putInt("currentTimer",0);
+        } else if(timer == Timer.Break){
+            editor.putInt("currentTimer",1);
+        } else {
+            editor.putInt("currentTimer",2);
+        }
+
+        editor.apply();
     }
 
     private void synchronizeClient(){
-        //Update UI on initial startup && remove notification when returning to main UI
         connected = true;
         Message msgState = Message.obtain();
         msgState.what = TimerActivity.UPDATE_STATE;
@@ -385,7 +373,6 @@ public class TimerService extends Service{
             pauseTimer();
         }
         notifUtil.hideTimer();
-        workerThread.quit();
         stopSelf();
     }
 
