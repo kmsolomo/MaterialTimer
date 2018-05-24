@@ -214,27 +214,44 @@ public class TimerActivity extends Activity{
         @Override
         public void onAnimationStart(Animator animator) {
             stopButton.setVisibility(View.VISIBLE);
+            stopButton.setClickable(false);
+            controlButton.setClickable(false);
             Log.v("animatorOutListener","set Visible");
         }
         @Override
-        public void onAnimationEnd(Animator animator) { }
+        public void onAnimationEnd(Animator animator) {
+            stopButton.setClickable(true);
+            controlButton.setClickable(true);
+        }
         @Override
-        public void onAnimationCancel(Animator animator) { }
+        public void onAnimationCancel(Animator animator) {
+
+        }
         @Override
-        public void onAnimationRepeat(Animator animator) { }
+        public void onAnimationRepeat(Animator animator) {
+
+        }
     };
 
     private Animator.AnimatorListener animInListener = new Animator.AnimatorListener() {
         @Override
-        public void onAnimationStart(Animator animator) { }
+        public void onAnimationStart(Animator animator) {
+            stopButton.setClickable(false);
+            controlButton.setClickable(false);
+        }
         @Override
         public void onAnimationEnd(Animator animator) {
             stopButton.setVisibility(View.GONE);
+            controlButton.setClickable(true);
         }
         @Override
-        public void onAnimationCancel(Animator animator) { }
+        public void onAnimationCancel(Animator animator) {
+
+        }
         @Override
-        public void onAnimationRepeat(Animator animator) { }
+        public void onAnimationRepeat(Animator animator) {
+
+        }
     };
 
     @Override

@@ -122,26 +122,27 @@ public class TimerService extends Service{
             restoreTimerState();
         } else {
             if(intent.getAction() != null){
+                restoreTimerState();
                 switch(intent.getAction()){
                     case TIMER_RESTART:
                         Log.v("onStartCommand","TIMER_RESTART");
-                        //if(running)startTimer();
-                        restoreTimerState();
+                        if(running)startTimer();
+                        //restoreTimerState();
                         break;
                     case ACTION_START:
-                        startTimer();
                         startForeground(NotificationUtil.NOTIFICATION_ID,
                                 notifUtil.buildNotification(formatTime(getTime()),
                                         true));
                         notifUtil.updateNotification(formatTime(getTime()));
+                        startTimer();
                         Log.v("onStartCommand","ACTION_START");
                         break;
                     case ACTION_PAUSE:
-                        pauseTimer();
                         startForeground(NotificationUtil.NOTIFICATION_ID,
                                 notifUtil.buildNotification(formatTime(getTime()),
                                         false));
                         notifUtil.updateNotification(formatTime(getTime()));
+                        pauseTimer();
                         Log.v("onStartCommand","ACTION_PAUSE");
                         break;
                     case ACTION_RESET:
@@ -384,7 +385,6 @@ public class TimerService extends Service{
             pauseTimer();
         }
         notifUtil.hideTimer();
-        refreshTimers();
         workerThread.quit();
         stopSelf();
     }
