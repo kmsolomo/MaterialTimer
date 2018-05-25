@@ -119,13 +119,15 @@ public class TimerService extends Service{
         if(intent == null){
             Log.v("onStartCommand","intent null");
             restoreTimerState();
+            if(running){
+                startTimer();
+            }
         } else {
             if(intent.getAction() != null){
                 switch(intent.getAction()){
                     case TIMER_RESTART:
-                        Log.v("onStartCommand","TIMER_RESTART");
-                        //if(running)startTimer();
                         restoreTimerState();
+                        Log.v("onStartCommand","TIMER_RESTART");
                         break;
                     case ACTION_START:
                         startTimer();
@@ -211,7 +213,6 @@ public class TimerService extends Service{
                     notifUtil.buildNotification(formatTime(getTime()),
                             true));
             notifUtil.updateNotification(formatTime(getTime()));
-            //startTimer();
         } else {
             startForeground(NotificationUtil.NOTIFICATION_ID,
                     notifUtil.buildNotification(formatTime(getTime()),
@@ -239,6 +240,7 @@ public class TimerService extends Service{
         }
 
         editor.apply();
+        Log.v("TimerService","saveTimerState");
     }
 
     private void synchronizeClient(){
