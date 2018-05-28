@@ -32,7 +32,7 @@ public class TimerService extends Service{
     private HandlerThread workerThread;
     private long milliSecondsLeft,countDownInterval;
     private int sessionBeforeLongBreak,sessionCount;
-    private boolean sessionStart,customFlag,connected,notification,running;
+    private boolean sessionStart,customFlag,connected,notification,running,killService;
     private SharedPreferences sharedPref;
     private Runnable workRun,breakRun,longBreakRun;
     private CountDownTimer workTimer,breakTimer,longBreakTimer,customTimer;
@@ -101,6 +101,7 @@ public class TimerService extends Service{
         connected = false;
         notification = false;
         running = false;
+        killService = false;
         sessionCount = 0;
         countDownInterval = 300;
 
@@ -127,18 +128,20 @@ public class TimerService extends Service{
                 switch(intent.getAction()){
                     case TIMER_RESTART:
                         restoreTimerState();
-                        Log.v("onStartCommand","TIMER_RESTART");
+                        Log.v ("onStartCommand","TIMER_RESTART");
                         break;
                     case ACTION_START:
                         startTimer();
-                        notifUtil.buildNotification(formatTime(getTime()),true);
-                        notifUtil.updateNotification(formatTime(getTime()));
+                        startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),true,getTimer()));
+//                        notifUtil.buildNotification(formatTime(getTime()),true,getTimer());
+                        notifUtil.updateNotification(formatTime(getTime()),getTimer());
                         Log.v("onStartCommand","ACTION_START");
                         break;
                     case ACTION_PAUSE:
                         pauseTimer();
-                        notifUtil.buildNotification(formatTime(getTime()),false);
-                        notifUtil.updateNotification(formatTime(getTime()));
+                        startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),false,getTimer()));
+//                        notifUtil.buildNotification(formatTime(getTime()),false,getTimer());
+                        notifUtil.updateNotification(formatTime(getTime()),getTimer());
                         Log.v("onStartCommand","ACTION_PAUSE");
                         break;
                     case ACTION_RESET:
@@ -153,7 +156,8 @@ public class TimerService extends Service{
                 saveTimerState();
             }
         }
-        return START_STICKY;
+        //return START_STICKY;
+        return super.onStartCommand(intent,flags,startId);
     }
 
     @Override
@@ -178,6 +182,15 @@ public class TimerService extends Service{
     public void onDestroy(){
         super.onDestroy();
         workerThread.quit();
+
+//        if(killService){
+//            workerThread.quit();
+//        } else {
+//            saveTimerState();
+//            Intent restartIntent = new Intent(this, TimerReceiver.class);
+//            restartIntent.setAction(TIMER_RESTART);
+//            sendBroadcast(restartIntent);
+//        }
         Log.v("TimerService","onDestroy()");
     }
 
@@ -211,13 +224,13 @@ public class TimerService extends Service{
         if(running){
             startForeground(NotificationUtil.NOTIFICATION_ID,
                     notifUtil.buildNotification(formatTime(getTime()),
-                            true));
-            notifUtil.updateNotification(formatTime(getTime()));
+                            true,getTimer()));
+            notifUtil.updateNotification(formatTime(getTime()),getTimer());
         } else {
             startForeground(NotificationUtil.NOTIFICATION_ID,
                     notifUtil.buildNotification(formatTime(getTime()),
-                            false));
-            notifUtil.updateNotification(formatTime(getTime()));
+                            false,getTimer()));
+            notifUtil.updateNotification(formatTime(getTime()),getTimer());
         }
         Log.v("TimerService","restoreTimerState");
     }
@@ -271,11 +284,11 @@ public class TimerService extends Service{
     private void startNotification(){
         if(!notification){
             if(running){
-                startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),true));
+                startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),true,getTimer()));
             } else {
-                startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),false));
+                startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),false,getTimer()));
             }
-            notifUtil.updateNotification(formatTime(getTime()));
+            notifUtil.updateNotification(formatTime(getTime()),getTimer());
             notification = true;
         }
         Log.v("startNotification","startNotification");
@@ -308,6 +321,16 @@ public class TimerService extends Service{
         return Long.valueOf(value) * 60000;
     }
 
+    private String getTimer(){
+        if(timer == Timer.Work){
+            return "Work";
+        } else if (timer == Timer.Break){
+            return "Break";
+        } else {
+            return "Long Break";
+        }
+    }
+
     private void screenOffNotification(){
         if(!connected && sessionStart && !notification){
             startNotification();
@@ -336,11 +359,12 @@ public class TimerService extends Service{
     }
 
     private void startTimer(){
-        running = true;
         if(timer == Timer.Work && !sessionStart){
             sessionStart = true;
+            running = true;
             timerHandler.post(workRun);
-        } else {
+        } else if(!running){
+            running = true;
             startCustomTimer(getTime());
         }
     }
@@ -375,6 +399,7 @@ public class TimerService extends Service{
             pauseTimer();
         }
         notifUtil.hideTimer();
+        killService = true;
         stopSelf();
     }
 
@@ -426,8 +451,9 @@ public class TimerService extends Service{
 
     private void updateTimer(long milliSecondsLeft){
         String currentTime = formatTime(milliSecondsLeft);
+        String currentTimer = getTimer();
         if(notification){
-            notifUtil.updateNotification(currentTime);
+            notifUtil.updateNotification(currentTime,currentTimer);
             Log.v("TimerService","updateNotification");
         } else {
             if(uiMessenger != null){
@@ -446,13 +472,13 @@ public class TimerService extends Service{
 
     private void refreshTimers(){
         //TODO: Get true values from shared preferences
-//        final long workTime = 60000;
-//        final long breakTime = 30000;
-//        final long longBreakTime = 40000;
+        final long workTime = 60000;
+        final long breakTime = 30000;
+        final long longBreakTime = 40000;
 
-        final long workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
-        final long breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
-        final long longBreakTime = convertTime(sharedPref.getInt(LONG_BREAK_TIME,15));
+//        final long workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
+//        final long breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
+//        final long longBreakTime = convertTime(sharedPref.getInt(LONG_BREAK_TIME,15));
 
         sessionBeforeLongBreak = sharedPref.getInt(LOOP_AMOUT_VALUE,4);
 

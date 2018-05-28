@@ -63,7 +63,7 @@ public class NotificationUtil {
 
     }
 
-    public Notification buildNotification(String currentTime, boolean timerRunning){
+    public Notification buildNotification(String currentTime, boolean timerRunning, String timer){
 
         //notification clicked
         Intent timerIntent = new Intent(mainContext,TimerActivity.class);
@@ -77,7 +77,7 @@ public class NotificationUtil {
             builder.setSmallIcon(R.drawable.ic_alarm_24dp)
                     .setAutoCancel(true)
                     .setContentIntent(timerPendingIntent)
-                    .setContentTitle("Testing Title")
+                    .setContentTitle(timer)
                     .setContentText(currentTime)
                     .setOnlyAlertOnce(true)
                     .setOngoing(true)
@@ -88,7 +88,7 @@ public class NotificationUtil {
             builder.setSmallIcon(R.drawable.ic_alarm_24dp)
                     .setAutoCancel(true)
                     .setContentIntent(timerPendingIntent)
-                    .setContentTitle("Testing Title")
+                    .setContentTitle(timer)
                     .setContentText(currentTime)
                     .setOnlyAlertOnce(true)
                     .setOngoing(true)
@@ -107,7 +107,8 @@ public class NotificationUtil {
         return builder.build();
     }
 
-    public void updateNotification(String time){
+    public void updateNotification(String time,String timer){
+        builder.setContentTitle(timer);
         builder.setContentText(time);
         notificationManager.notify(NOTIFICATION_ID, builder.build());
 
