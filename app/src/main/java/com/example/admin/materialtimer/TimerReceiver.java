@@ -41,7 +41,6 @@ public class TimerReceiver extends BroadcastReceiver {
                 case TimerService.ACTION_RESET:
                     Intent resetIntent = new Intent(context, TimerService.class);
                     resetIntent.setAction(TimerService.ACTION_RESET);
-                    //startService(context,resetIntent);
                     context.startService(resetIntent);
                     break;
             }
