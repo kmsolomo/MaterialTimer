@@ -46,6 +46,7 @@ public class TimerService extends Service{
     private final String BREAK_TIME = "pref_break_time";
     private final String LONG_BREAK_TIME = "pref_long_break_time";
     private final String LOOP_AMOUT_VALUE = "pref_loop_amount";
+    private final String VIBRATION = "pref_vibrate";
 
     public static final String TIMER_RESTART = "timer_service_restart";
     public static final String SCREEN_OFF = "timer_screen_off";
@@ -116,7 +117,7 @@ public class TimerService extends Service{
 
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         notifUtil = new NotificationUtil(this);
-        workerThread = new HandlerThread("WorkerThread", Process.THREAD_PRIORITY_BACKGROUND);
+        workerThread = new HandlerThread("WorkerThread", Process.THREAD_PRIORITY_DEFAULT);
         workerThread.start();
         timerHandler = new Handler(workerThread.getLooper());
         timerMessenger = new Messenger(new ServiceHandler(workerThread.getLooper()));
@@ -127,46 +128,67 @@ public class TimerService extends Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
         if(intent == null){
+            restartTimer();
             Log.v("onStartCommand","intent null");
-            restoreTimerState();
-            if(running){
-                startTimer();
-            }
         } else {
             if(intent.getAction() != null){
                 switch(intent.getAction()){
                     case TIMER_RESTART:
-                        restoreTimerState();
-                        if(running){
-                            startTimer();
-                        }
+                        restartTimer();
                         Log.v ("onStartCommand","TIMER_RESTART");
                         break;
                     case ACTION_START:
-                        startTimer();
-                        startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),true,getTimer()));
-                        notifUtil.updateNotification(formatTime(getTime()),getTimer());
+                        startAction();
                         Log.v("onStartCommand","ACTION_START");
                         break;
                     case ACTION_PAUSE:
-                        pauseTimer();
-                        startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),false,getTimer()));
-                        notifUtil.updateNotification(formatTime(getTime()),getTimer());
+                        pauseAction();
                         Log.v("onStartCommand","ACTION_PAUSE");
                         break;
                     case ACTION_RESET:
                         stopTimer();
+                        Log.v("onStartCommand","ACTION_RESET");
                         break;
                     case SCREEN_OFF:
                         screenOffNotification();
+                        Log.v("onStartCommand","SCREEN_OFF");
                         break;
                     default:
                         break;
                 }
-                saveTimerState();
             }
         }
-        return super.onStartCommand(intent,flags,startId);
+        return START_STICKY;
+    }
+
+    private void pauseAction(){
+        pauseTimer();
+        if(running){
+            pauseTimer();
+        }
+        startNotification();
+        saveTimerState();
+    }
+
+    private void startAction(){
+        startTimer();
+        startNotification();
+        saveTimerState();
+    }
+
+    private void restartTimer(){
+        restoreTimerState();
+        if(running) {
+            running = false;
+            startTimer();
+            Log.v("restartTimer", "startTimer()");
+        }
+//        } else {
+//            pauseTimer();
+//            Log.v("restartTimer","pauseTimer()");
+//        }
+        startNotification();
+        saveTimerState();
     }
 
     @Override
@@ -189,14 +211,23 @@ public class TimerService extends Service{
 
     @Override
     public void onDestroy(){
-//        if(killService){
-//            workerThread.quit();
-//        } else {
-//            saveTimerState();
-//            Intent restartIntent = new Intent(this, TimerReceiver.class);
-//            restartIntent.setAction(TIMER_RESTART);
-//            sendBroadcast(restartIntent);
-//        }
+        //stopforegound for comprehensive cleanup
+        if(killService){
+            saveTimerState();
+            if(workerThread != null && workerThread.isAlive()){
+                workerThread.quit();
+                Log.v("TimerService","workerThread.quit()");
+            }
+        } else {
+            saveTimerState();
+            if(workerThread != null && workerThread.isAlive()){
+                workerThread.quit();
+                Log.v("TimerService","workerThread.quit()");
+            }
+            Intent restartIntent = new Intent(this, TimerReceiver.class);
+            restartIntent.setAction(TIMER_RESTART);
+            sendBroadcast(restartIntent);
+        }
         super.onDestroy();
         Log.v("TimerService","onDestroy()");
     }
@@ -243,6 +274,7 @@ public class TimerService extends Service{
     }
 
     private void saveTimerState(){
+        saveTime();
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean("sessionStart",sessionStart);
         editor.putBoolean("customFlag",customFlag);
@@ -289,29 +321,26 @@ public class TimerService extends Service{
     }
 
     private void startNotification(){
-     //   if(!notification){
-            if(running){
-                startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),true,getTimer()));
-            } else {
-                startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),false,getTimer()));
-            }
-            notifUtil.updateNotification(formatTime(getTime()),getTimer());
-            notification = true;
-     //   }
+        if(running){
+            startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),true,getTimer()));
+        } else {
+            startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),false,getTimer()));
+        }
+        notifUtil.updateNotification(formatTime(getTime()),getTimer());
+        notification = true;
         Log.v("startNotification","startNotification");
     }
 
     private void stopNotification(){
         if(notification){
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-                stopForeground(NotificationUtil.NOTIFICATION_ID);
-                notifUtil.hideTimer();
+                stopForeground(STOP_FOREGROUND_REMOVE);
             } else {
                 stopForeground(true);
-                notifUtil.hideTimer();
             }
             notification = false;
         }
+        Log.v("stopNotification","stopNotification");
     }
 
     private void saveTime(){
@@ -373,6 +402,7 @@ public class TimerService extends Service{
         } else if(!running){
             running = true;
             startCustomTimer(getTime());
+            Log.v("startTimer","startCustomTimer");
         }
     }
 
@@ -381,20 +411,28 @@ public class TimerService extends Service{
             running = false;
             if(customFlag){
                 saveTime();
-                customTimer.cancel();
+                if(customTimer != null){
+                    customTimer.cancel();
+                }
             } else {
                 switch(timer){
                     case Work:
                         saveTime();
-                        workTimer.cancel();
+                        if(workTimer != null){
+                            workTimer.cancel();
+                        }
                         break;
                     case Break:
                         saveTime();
-                        breakTimer.cancel();
+                        if(breakTimer != null){
+                            breakTimer.cancel();
+                        }
                         break;
                     case LongBreak:
                         saveTime();
-                        longBreakTimer.cancel();
+                        if(longBreakTimer != null){
+                            longBreakTimer.cancel();
+                        }
                         break;
                     default:
                         break;
@@ -404,10 +442,7 @@ public class TimerService extends Service{
     }
 
     private void stopTimer(){
-        if(running){
-            pauseTimer();
-        }
-        notifUtil.hideTimer();
+        stopNotification();
         killService = true;
         stopSelf();
     }
@@ -421,10 +456,13 @@ public class TimerService extends Service{
     }
 
     public void vibrate(){
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            vibrator.vibrate(VibrationEffect.createOneShot(1000,VibrationEffect.DEFAULT_AMPLITUDE));
-        } else {
-            vibrator.vibrate(1000);
+        boolean vibratePref = sharedPref.getBoolean(VIBRATION,false);
+        if(vibratePref){
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+                vibrator.vibrate(VibrationEffect.createOneShot(1000,VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                vibrator.vibrate(1000);
+            }
         }
     }
 
@@ -470,7 +508,6 @@ public class TimerService extends Service{
         String currentTimer = getTimer();
         if(notification){
             notifUtil.updateNotification(currentTime,currentTimer);
-            Log.v("TimerService","updateNotification");
         } else {
             if(uiMessenger != null){
                 Message updateUI = Message.obtain();
@@ -481,19 +518,20 @@ public class TimerService extends Service{
                 } catch(RemoteException e){
                     Log.e("RemoteException",e.toString());
                 }
-                Log.v("TimerService","updateTimer");
             }
         }
+        saveTime();
     }
 
     private void refreshTimers(){
-        final long workTime = 60000;
-        final long breakTime = 30000;
-        final long longBreakTime = 40000;
 
-//        final long workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
-//        final long breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
-//        final long longBreakTime = convertTime(sharedPref.getInt(LONG_BREAK_TIME,15));
+//        final long workTime = 60000;
+//        final long breakTime = 45000;
+//        final long longBreakTime = 50000;
+
+        final long workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
+        final long breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
+        final long longBreakTime = convertTime(sharedPref.getInt(LONG_BREAK_TIME,15));
 
         sessionBeforeLongBreak = sharedPref.getInt(LOOP_AMOUT_VALUE,4);
 

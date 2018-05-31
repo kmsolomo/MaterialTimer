@@ -25,7 +25,7 @@ public class NotificationUtil {
     private Notification.Action pauseAction;
     private Notification.Action stopAction;
 
-    public static final int NOTIFICATION_ID = 0;
+    public static final int NOTIFICATION_ID = 1;
 
     public NotificationUtil(Context context){
         mainContext = context;
@@ -51,10 +51,10 @@ public class NotificationUtil {
         PendingIntent stopPendingIntent = PendingIntent.getBroadcast(mainContext,0,stopIntent,PendingIntent.FLAG_UPDATE_CURRENT);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            Icon pauseIcon = Icon.createWithResource(mainContext, R.drawable.ic_alarm_24dp);
-            startAction = new Notification.Action.Builder(pauseIcon,"START",startPendingIntent).build();
-            pauseAction = new Notification.Action.Builder(pauseIcon, "PAUSE", pausePendingIntent).build();
-            stopAction = new Notification.Action.Builder(pauseIcon, "STOP", stopPendingIntent).build();
+            Icon alarmIcon = Icon.createWithResource(mainContext, R.drawable.ic_alarm_24dp);
+            startAction = new Notification.Action.Builder(alarmIcon,"START",startPendingIntent).build();
+            pauseAction = new Notification.Action.Builder(alarmIcon, "PAUSE", pausePendingIntent).build();
+            stopAction = new Notification.Action.Builder(alarmIcon, "STOP", stopPendingIntent).build();
         } else {
             startAction = new Notification.Action.Builder(R.drawable.ic_alarm_24dp,"START",startPendingIntent).build();
             pauseAction = new Notification.Action.Builder(R.drawable.ic_alarm_24dp, "PAUSE", pausePendingIntent).build();

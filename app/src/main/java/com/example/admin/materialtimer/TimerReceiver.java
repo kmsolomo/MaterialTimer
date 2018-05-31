@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.util.Log;
 
 /**
  * Created by admin on 4/16/18.
@@ -24,6 +25,7 @@ public class TimerReceiver extends BroadcastReceiver {
         if(intent.getAction() != null){
             switch(intent.getAction()){
                 case TimerService.TIMER_RESTART:
+                    Log.v("TimerReceiver","restart_intent");
                     Intent restartIntent = new Intent(context,TimerService.class);
                     restartIntent.setAction(TimerService.TIMER_RESTART);
                     startService(context,restartIntent);
@@ -41,10 +43,9 @@ public class TimerReceiver extends BroadcastReceiver {
                 case TimerService.ACTION_RESET:
                     Intent resetIntent = new Intent(context, TimerService.class);
                     resetIntent.setAction(TimerService.ACTION_RESET);
-                    context.startService(resetIntent);
+                    startService(context,resetIntent);
                     break;
             }
-
         }
     }
 }

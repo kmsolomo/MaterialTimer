@@ -275,19 +275,19 @@ public class TimerActivity extends Activity{
 
         initAnimations(controlButton.getTranslationX());
 
-        //Restore state
-        if(savedInstanceState != null){
-            if(savedInstanceState.get("TIMER_STATE") == TimerState.Running){
-                timerStatus = TimerState.Running;
-                controlButton.setImageResource(R.drawable.ic_pause_24dp);
-            } else if(savedInstanceState.get("TIMER_STATE") == TimerState.Paused){
-                timerStatus = TimerState.Paused;
-                controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
-            }
-            timerView.setText(savedInstanceState.getString("CURRENT_TIME"));
-            animation = savedInstanceState.getBoolean("ANIMATION_STATE");
-            Log.v("TimerActivity","onCreate restoring state");
-        }
+//        //Restore state
+//        if(savedInstanceState != null){
+//            if(savedInstanceState.get("TIMER_STATE") == TimerState.Running){
+//                timerStatus = TimerState.Running;
+//                controlButton.setImageResource(R.drawable.ic_pause_24dp);
+//            } else if(savedInstanceState.get("TIMER_STATE") == TimerState.Paused){
+//                timerStatus = TimerState.Paused;
+//                controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
+//            }
+//            timerView.setText(savedInstanceState.getString("CURRENT_TIME"));
+//            animation = savedInstanceState.getBoolean("ANIMATION_STATE");
+//            Log.v("TimerActivity","onCreate restoring state");
+//        }
 
         //insures service persists bound lifecycle
         timerIntent = new Intent(TimerActivity.this, TimerService.class);
