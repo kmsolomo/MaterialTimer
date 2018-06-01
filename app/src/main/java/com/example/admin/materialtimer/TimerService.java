@@ -168,7 +168,6 @@ public class TimerService extends Service{
     }
 
     private void startAction(){
-        restoreTimerState();
         startTimer();
         startNotification();
         saveTimerState();
@@ -179,7 +178,6 @@ public class TimerService extends Service{
         if(running) {
             running = false;
             startTimer();
-            Log.v("restartTimer", "startTimer()");
         }
         startNotification();
         saveTimerState();
@@ -208,7 +206,6 @@ public class TimerService extends Service{
         saveTimerState();
         if(workerThread != null && workerThread.isAlive()){
             workerThread.quit();
-            Log.v("TimerService","workerThread.quit()");
         }
         super.onDestroy();
         Log.v("TimerService","onDestroy()");
@@ -377,7 +374,6 @@ public class TimerService extends Service{
         } else if(!running){
             running = true;
             startCustomTimer(getTime());
-            Log.v("startTimer","startCustomTimer");
         }
     }
 
@@ -429,7 +425,7 @@ public class TimerService extends Service{
         synchronizeClient();
     }
 
-    public void vibrate(){
+    private void vibrate(){
         boolean vibratePref = sharedPref.getBoolean(VIBRATION,false);
         if(vibratePref){
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
@@ -495,8 +491,6 @@ public class TimerService extends Service{
             }
         }
         saveTimerState();
-//        saveTime();
-//        saveTimer();
     }
 
     private void refreshTimers(){
