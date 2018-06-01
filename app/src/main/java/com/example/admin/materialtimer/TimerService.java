@@ -1,6 +1,7 @@
 package com.example.admin.materialtimer;
 
 import android.app.Service;
+import android.content.ComponentCallbacks2;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -34,7 +35,7 @@ public class TimerService extends Service{
     private HandlerThread workerThread;
     private long milliSecondsLeft,countDownInterval;
     private int sessionBeforeLongBreak,sessionCount;
-    private boolean sessionStart,customFlag,connected,notification,running,killService;
+    private boolean sessionStart,customFlag,connected,notification,running;
     private SharedPreferences sharedPref;
     private Runnable workRun,breakRun,longBreakRun;
     private CountDownTimer workTimer,breakTimer,longBreakTimer,customTimer;
@@ -105,7 +106,6 @@ public class TimerService extends Service{
         connected = false;
         notification = false;
         running = false;
-        killService = false;
         sessionCount = 0;
         countDownInterval = 300;
 
@@ -163,14 +163,12 @@ public class TimerService extends Service{
 
     private void pauseAction(){
         pauseTimer();
-        if(running){
-            pauseTimer();
-        }
         startNotification();
         saveTimerState();
     }
 
     private void startAction(){
+        restoreTimerState();
         startTimer();
         startNotification();
         saveTimerState();
@@ -183,10 +181,6 @@ public class TimerService extends Service{
             startTimer();
             Log.v("restartTimer", "startTimer()");
         }
-//        } else {
-//            pauseTimer();
-//            Log.v("restartTimer","pauseTimer()");
-//        }
         startNotification();
         saveTimerState();
     }
@@ -211,44 +205,24 @@ public class TimerService extends Service{
 
     @Override
     public void onDestroy(){
-        //stopforegound for comprehensive cleanup
-        if(killService){
-            saveTimerState();
-            if(workerThread != null && workerThread.isAlive()){
-                workerThread.quit();
-                Log.v("TimerService","workerThread.quit()");
-            }
-        } else {
-            saveTimerState();
-            if(workerThread != null && workerThread.isAlive()){
-                workerThread.quit();
-                Log.v("TimerService","workerThread.quit()");
-            }
-            Intent restartIntent = new Intent(this, TimerReceiver.class);
-            restartIntent.setAction(TIMER_RESTART);
-            sendBroadcast(restartIntent);
+        saveTimerState();
+        if(workerThread != null && workerThread.isAlive()){
+            workerThread.quit();
+            Log.v("TimerService","workerThread.quit()");
         }
         super.onDestroy();
         Log.v("TimerService","onDestroy()");
-    }
-
-    @Override
-    public void onTaskRemoved(Intent intent){
-        saveTimerState();
-        Intent restartIntent = new Intent(this, TimerReceiver.class);
-        restartIntent.setAction(TIMER_RESTART);
-        sendBroadcast(restartIntent);
-        super.onTaskRemoved(intent);
-        Log.v("TimerService","onTaskRemoved");
     }
 
     private void restoreTimerState(){
         sessionStart = sharedPref.getBoolean("sessionStart",false);
         customFlag = sharedPref.getBoolean("customFlag",false);
         connected = sharedPref.getBoolean("connected",false);
-        notification = sharedPref.getBoolean("notification",false);
+        notification = sharedPref.getBoolean("notification",true);
         running = sharedPref.getBoolean("running",false);
         sessionCount = sharedPref.getInt("sessionCount",0);
+        sessionBeforeLongBreak = sharedPref.getInt("sessionBeforeLongBreak",4);
+        milliSecondsLeft = getTime();
 
         int timerState = sharedPref.getInt("currentTimer",0);
         if(timerState == 0){
@@ -282,6 +256,7 @@ public class TimerService extends Service{
         editor.putBoolean("notification",notification);
         editor.putBoolean("running",running);
         editor.putInt("sessionCount",sessionCount);
+        editor.putInt("sessionBeforeLongBreak",sessionBeforeLongBreak);
 
         if(timer == Timer.Work){
             editor.putInt("currentTimer",0);
@@ -443,7 +418,6 @@ public class TimerService extends Service{
 
     private void stopTimer(){
         stopNotification();
-        killService = true;
         stopSelf();
     }
 
@@ -520,15 +494,12 @@ public class TimerService extends Service{
                 }
             }
         }
-        saveTime();
+        saveTimerState();
+//        saveTime();
+//        saveTimer();
     }
 
     private void refreshTimers(){
-
-//        final long workTime = 60000;
-//        final long breakTime = 45000;
-//        final long longBreakTime = 50000;
-
         final long workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
         final long breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
         final long longBreakTime = convertTime(sharedPref.getInt(LONG_BREAK_TIME,15));
