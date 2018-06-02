@@ -11,6 +11,7 @@
         <item name="android:windowBackground">@color/colorLightPrimary</item>
         <item name="android:colorControlNormal">@color/colorLightPrimary</item>
         <item name="android:alertDialogTheme">@style/AlertDialogLight</item>
+        <item name="android:windowAnimationStyle">@style/activityTransition</item>
     </style>
 
     <style name="AlertDialogLight" parent="Theme.AppCompat.Dialog.Alert">
@@ -27,6 +28,7 @@
         <item name="android:textColor">@color/textColorDarkPrimary</item>
         <item name="android:windowBackground">@color/colorDarkPrimaryDark</item>
         <item name="android:statusBarColor">@color/colorBlackPrimary</item>
+        <item name="android:windowAnimationStyle">@style/activityTransition</item>
     </style>
 
 
@@ -38,6 +40,15 @@
         <item name="android:textColor">@color/textColorDarkPrimary</item>
         <item name="android:windowBackground">@color/colorBlackPrimary</item>
         <item name="android:statusBarColor">@color/colorBlackPrimary</item>
+        <item name="android:windowAnimationStyle">@style/activityTransition</item>
+    </style>
+
+    <!-- Activity Transitions -->
+    <style name="activityTransition">
+        <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
+        <item name="android:windowReenterTransition">@android:anim/fade_in</item>
+        <item name="android:windowReturnTransition">@android:anim/fade_in</item>
     </style>
 
 </resources>
