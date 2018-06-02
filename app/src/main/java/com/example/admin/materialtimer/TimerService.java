@@ -49,7 +49,7 @@ public class TimerService extends Service{
     private final String LOOP_AMOUT_VALUE = "pref_loop_amount";
     private final String VIBRATION = "pref_vibrate";
 
-    public static final String TIMER_RESTART = "timer_service_restart";
+    public static final String TIMER_REFRESH = "timer_service_refresh";
     public static final String SCREEN_OFF = "timer_screen_off";
     public static final String ACTION_START = "start";
     public static final String ACTION_PAUSE = "pause";
@@ -129,29 +129,23 @@ public class TimerService extends Service{
     public int onStartCommand(Intent intent, int flags, int startId){
         if(intent == null){
             restartTimer();
-            Log.v("onStartCommand","intent null");
         } else {
             if(intent.getAction() != null){
                 switch(intent.getAction()){
-                    case TIMER_RESTART:
-                        restartTimer();
-                        Log.v ("onStartCommand","TIMER_RESTART");
+                    case TIMER_REFRESH:
+                        refreshTimers();
                         break;
                     case ACTION_START:
                         startAction();
-                        Log.v("onStartCommand","ACTION_START");
                         break;
                     case ACTION_PAUSE:
                         pauseAction();
-                        Log.v("onStartCommand","ACTION_PAUSE");
                         break;
                     case ACTION_RESET:
                         stopTimer();
-                        Log.v("onStartCommand","ACTION_RESET");
                         break;
                     case SCREEN_OFF:
                         screenOffNotification();
-                        Log.v("onStartCommand","SCREEN_OFF");
                         break;
                     default:
                         break;
@@ -264,7 +258,6 @@ public class TimerService extends Service{
         }
 
         editor.apply();
-        Log.v("TimerService","saveTimerState");
     }
 
     private void synchronizeClient(){
@@ -274,6 +267,7 @@ public class TimerService extends Service{
         msgState.obj = running;
 
         if(timer == Timer.Work && !sessionStart){
+            refreshTimers();
             updateTimer(convertTime(sharedPref.getInt(WORK_TIME,25)));
             msgState.arg1 = 0;
         } else {
@@ -373,7 +367,7 @@ public class TimerService extends Service{
             timerHandler.post(workRun);
         } else if(!running){
             running = true;
-            startCustomTimer(getTime());
+            startCustomTimer(milliSecondsLeft);
         }
     }
 
@@ -494,6 +488,7 @@ public class TimerService extends Service{
     }
 
     private void refreshTimers(){
+        Log.v("TimerService","refreshTimers()");
         final long workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
         final long breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
         final long longBreakTime = convertTime(sharedPref.getInt(LONG_BREAK_TIME,15));

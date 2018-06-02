@@ -55,7 +55,7 @@ public class SettingsActivity extends Activity implements SettingsFragment.OnThe
         recreate();
     }
 
-    public void setupToolbar(){
+    private void setupToolbar(){
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String appTheme = sharedPref.getString(themeKey,defaultTheme);
 

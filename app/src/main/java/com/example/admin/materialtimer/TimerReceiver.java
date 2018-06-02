@@ -24,10 +24,9 @@ public class TimerReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent){
         if(intent.getAction() != null){
             switch(intent.getAction()){
-                case TimerService.TIMER_RESTART:
-                    Log.v("TimerReceiver","restart_intent");
+                case TimerService.TIMER_REFRESH:
                     Intent restartIntent = new Intent(context,TimerService.class);
-                    restartIntent.setAction(TimerService.TIMER_RESTART);
+                    restartIntent.setAction(TimerService.TIMER_REFRESH);
                     startService(context,restartIntent);
                     break;
                 case TimerService.ACTION_PAUSE:
