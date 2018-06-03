@@ -270,11 +270,13 @@ public class TimerService extends Service{
             refreshTimers();
             updateTimer(convertTime(sharedPref.getInt(WORK_TIME,25)));
             msgState.arg1 = 0;
+            Log.v("TimerService","if syncClient()");
         } else {
             if(notification){
                 stopNotification();
             }
-            updateTimer(getTime());
+            //updateTimer(getTime());
+            updateTimer(milliSecondsLeft);
             msgState.arg1 = 1;
         }
 
@@ -365,9 +367,11 @@ public class TimerService extends Service{
             sessionStart = true;
             running = true;
             timerHandler.post(workRun);
+            Log.v("TimerService","starTimer() if");
         } else if(!running){
             running = true;
             startCustomTimer(milliSecondsLeft);
+            Log.v("TimerService","starTimer() else if");
         }
     }
 

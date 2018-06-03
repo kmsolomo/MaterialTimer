@@ -1,5 +1,6 @@
 package com.example.admin.materialtimer;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -50,6 +51,17 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         super.onAttach(context);
         try{
             themeChangeListener = (OnThemeChangeListener) context;
+        } catch(ClassCastException e) {
+            throw new ClassCastException(e.toString() + "implement OnThemeChangeListener");
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public void onAttach(Activity activity){
+        super.onAttach(activity);
+        try{
+            themeChangeListener = (OnThemeChangeListener) activity;
         } catch(ClassCastException e) {
             throw new ClassCastException(e.toString() + "implement OnThemeChangeListener");
         }
