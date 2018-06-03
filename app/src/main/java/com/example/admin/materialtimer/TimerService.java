@@ -488,7 +488,6 @@ public class TimerService extends Service{
     }
 
     private void refreshTimers(){
-        Log.v("TimerService","refreshTimers()");
         final long workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
         final long breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
         final long longBreakTime = convertTime(sharedPref.getInt(LONG_BREAK_TIME,15));
