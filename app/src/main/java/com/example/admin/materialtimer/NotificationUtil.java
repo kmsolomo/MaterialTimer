@@ -51,14 +51,16 @@ public class NotificationUtil {
         PendingIntent stopPendingIntent = PendingIntent.getBroadcast(mainContext,0,stopIntent,PendingIntent.FLAG_UPDATE_CURRENT);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            Icon alarmIcon = Icon.createWithResource(mainContext, R.drawable.ic_alarm_24dp);
-            startAction = new Notification.Action.Builder(alarmIcon,"START",startPendingIntent).build();
-            pauseAction = new Notification.Action.Builder(alarmIcon, "PAUSE", pausePendingIntent).build();
-            stopAction = new Notification.Action.Builder(alarmIcon, "STOP", stopPendingIntent).build();
+            Icon startIcon = Icon.createWithResource(mainContext, R.drawable.ic_play_arrow_24dp);
+            Icon pauseIcon = Icon.createWithResource(mainContext, R.drawable.ic_pause_24dp);
+            Icon stopIcon = Icon.createWithResource(mainContext, R.drawable.ic_stop_24dp);
+            startAction = new Notification.Action.Builder(startIcon,"START",startPendingIntent).build();
+            pauseAction = new Notification.Action.Builder(pauseIcon, "PAUSE", pausePendingIntent).build();
+            stopAction = new Notification.Action.Builder(stopIcon, "STOP", stopPendingIntent).build();
         } else {
-            startAction = new Notification.Action.Builder(R.drawable.ic_alarm_24dp,"START",startPendingIntent).build();
-            pauseAction = new Notification.Action.Builder(R.drawable.ic_alarm_24dp, "PAUSE", pausePendingIntent).build();
-            stopAction = new Notification.Action.Builder(R.drawable.ic_alarm_24dp, "STOP", stopPendingIntent).build();
+            startAction = new Notification.Action.Builder(R.drawable.ic_play_arrow_24dp,"START",startPendingIntent).build();
+            pauseAction = new Notification.Action.Builder(R.drawable.ic_pause_24dp, "PAUSE", pausePendingIntent).build();
+            stopAction = new Notification.Action.Builder(R.drawable.ic_stop_24dp, "STOP", stopPendingIntent).build();
         }
 
     }
