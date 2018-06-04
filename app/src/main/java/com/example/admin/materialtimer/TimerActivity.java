@@ -299,17 +299,8 @@ public class TimerActivity extends Activity{
 
     @Override
     protected void onStop(){
-        if(timerStatus != TimerState.Stopped){
-            Message notifyMsg = Message.obtain();
-            notifyMsg.what = TimerService.START_NOTIFICATION;
-            try{
-                timerMessenger.send(notifyMsg);
-            } catch (RemoteException e){
-                Log.e("RemoteException",e.toString());
-            }
-        }
-        unbindService(timerConnection);
         super.onStop();
+        unbindService(timerConnection);
     }
 
     @Override
@@ -323,5 +314,32 @@ public class TimerActivity extends Activity{
         if(requestCode == THEME_REQUEST_CODE){
             recreate();
         }
+    }
+
+    @Override
+    public void onUserLeaveHint(){
+        if(timerStatus != TimerState.Stopped){
+            Message notifyMsg = Message.obtain();
+            notifyMsg.what = TimerService.START_NOTIFICATION;
+            try{
+                timerMessenger.send(notifyMsg);
+            } catch (RemoteException e){
+                Log.e("RemoteException",e.toString());
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed(){
+        if(timerStatus != TimerState.Stopped){
+            Message notifyMsg = Message.obtain();
+            notifyMsg.what = TimerService.START_NOTIFICATION;
+            try{
+                timerMessenger.send(notifyMsg);
+            } catch (RemoteException e){
+                Log.e("RemoteException",e.toString());
+            }
+        }
+        finish();
     }
 }
