@@ -40,6 +40,7 @@ public class TimerActivity extends Activity{
     private TimerState timerStatus = TimerState.Stopped;
     private Intent timerIntent;
     private Messenger timerMessenger;
+    private BroadcastReceiver notificationReceiver;
     private boolean animation = false;
     private AnimatorSet animatorOut,animatorIn;
     private final int THEME_REQUEST_CODE = 1;
@@ -49,13 +50,11 @@ public class TimerActivity extends Activity{
         public void onServiceConnected(ComponentName className, IBinder service){
             timerMessenger = new Messenger(service);
             synchronizeService();
-            Log.v("TimerActivity","onServiceConnected");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0){
             timerMessenger = null;
-            Log.v("TimerActivity","onServiceDisconnected");
         }
     };
 
@@ -98,15 +97,12 @@ public class TimerActivity extends Activity{
             if(state){
                 timerStatus = TimerState.Running;
                 controlButton.setImageResource(R.drawable.ic_pause_24dp);
-                Log.v("stateUpdate","inside if");
             } else {
                 timerStatus = TimerState.Paused;
                 controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
-                Log.v("stateUpdate","inside else");
             }
             animatorOut.start();
             animation = true;
-            Log.v("stateUpdate","animatorOut.start()");
         }
     }
 
@@ -156,7 +152,6 @@ public class TimerActivity extends Activity{
                 msg.what = TimerService.PAUSE_TIMER;
                 try{
                     timerMessenger.send(msg);
-                    Log.v("onClick","PAUSE_TIMER");
                 } catch(RemoteException e) {
                     Log.e("RemoteException",e.toString());
                 }
@@ -168,7 +163,6 @@ public class TimerActivity extends Activity{
                 msg.what = TimerService.START_TIMER;
                 try{
                     timerMessenger.send(msg);
-                    Log.v("onClick","START_TIMER");
                 } catch(RemoteException e) {
                     Log.e("RemoteException",e.toString());
                 }
@@ -215,7 +209,6 @@ public class TimerActivity extends Activity{
             stopButton.setVisibility(View.VISIBLE);
             stopButton.setClickable(false);
             controlButton.setClickable(false);
-            Log.v("animatorOutListener","set Visible");
         }
         @Override
         public void onAnimationEnd(Animator animator) {
@@ -277,6 +270,11 @@ public class TimerActivity extends Activity{
         //insures service persists bound lifecycle
         timerIntent = new Intent(TimerActivity.this, TimerService.class);
         startService(timerIntent);
+
+        notificationReceiver = new NotificationReceiver();
+        IntentFilter notificationFilter = new IntentFilter();
+        notificationFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(notificationReceiver,notificationFilter);
     }
 
     @Override
@@ -301,7 +299,6 @@ public class TimerActivity extends Activity{
 
     @Override
     protected void onStop(){
-        super.onStop();
         if(timerStatus != TimerState.Stopped){
             Message notifyMsg = Message.obtain();
             notifyMsg.what = TimerService.START_NOTIFICATION;
@@ -310,10 +307,15 @@ public class TimerActivity extends Activity{
             } catch (RemoteException e){
                 Log.e("RemoteException",e.toString());
             }
-            Log.v("onUserLeaveHint()","notification message sent");
         }
         unbindService(timerConnection);
-        Log.v("TimerActivity","onStop()");
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        unregisterReceiver(notificationReceiver);
     }
 
     @Override

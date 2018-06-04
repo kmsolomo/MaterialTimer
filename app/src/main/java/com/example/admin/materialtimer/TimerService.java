@@ -128,9 +128,6 @@ public class TimerService extends Service{
         } else {
             if(intent.getAction() != null){
                 switch(intent.getAction()){
-                    case TIMER_REFRESH:
-                        refreshTimers();
-                        break;
                     case ACTION_START:
                         startAction();
                         break;
@@ -139,6 +136,9 @@ public class TimerService extends Service{
                         break;
                     case ACTION_RESET:
                         stopTimer();
+                        break;
+                    case SCREEN_OFF:
+                        screenOff();
                         break;
                     default:
                         break;
@@ -303,6 +303,12 @@ public class TimerService extends Service{
         Log.v("stopNotification","stopNotification");
     }
 
+    private void screenOff(){
+        if(!connected && sessionStart && !notification){
+            startNotification();
+        }
+    }
+
     private void saveTime(){
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putLong("timeLeft",milliSecondsLeft);
@@ -324,12 +330,6 @@ public class TimerService extends Service{
             return "Break";
         } else {
             return "Long Break";
-        }
-    }
-
-    private void screenOffNotification(){
-        if(!connected && sessionStart && !notification){
-            startNotification();
         }
     }
 
@@ -365,16 +365,21 @@ public class TimerService extends Service{
         }
     }
 
+    private void refreshTimers(){
+        workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
+        breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
+        longBreakTime = convertTime(sharedPref.getInt(LONG_BREAK_TIME,15));
+        sessionBeforeLongBreak = sharedPref.getInt(LOOP_AMOUT_VALUE,4);
+    }
+
     private void startTimer(){
         if(currentTimer == Timer.Work && !sessionStart && !running){
             sessionStart = true;
             running = true;
             timer(convertTime(sharedPref.getInt(WORK_TIME,25)));
-            Log.v("TimerService","startTimer() if");
         } else if(!running){
             running = true;
             timer(milliSecondsLeft);
-            Log.v("TimerService","startTimer() else if");
         }
     }
 
@@ -383,7 +388,6 @@ public class TimerService extends Service{
             running = false;
             saveTime();
             timer.cancel();
-            Log.v("TimerService","pauseTimer()");
         }
     }
 
@@ -398,7 +402,6 @@ public class TimerService extends Service{
         sessionStart = false;
         refreshTimers();
         synchronizeClient();
-        Log.v("TimerService","resetTimer");
     }
 
     private void timer(long timeLeft){
@@ -461,12 +464,5 @@ public class TimerService extends Service{
             }
         }
         saveTimerState();
-    }
-
-    private void refreshTimers(){
-        workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
-        breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
-        longBreakTime = convertTime(sharedPref.getInt(LONG_BREAK_TIME,15));
-        sessionBeforeLongBreak = sharedPref.getInt(LOOP_AMOUT_VALUE,4);
     }
 }

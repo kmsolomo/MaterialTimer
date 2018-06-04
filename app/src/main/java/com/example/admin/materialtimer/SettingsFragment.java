@@ -77,15 +77,6 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
             if(value.equals(themeLight) || value.equals(themeDark) || value.equals(themeBlack)){
                 themeChangeListener.onThemeChange();
             }
-        } else if (pref instanceof com.pavelsikun.seekbarpreference.SeekBarPreference){
-            Intent refreshTimer;
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-                refreshTimer = new Intent(getContext(),TimerReceiver.class);
-            } else {
-                refreshTimer = new Intent(getActivity(),TimerReceiver.class);
-            }
-            refreshTimer.setAction(TimerService.TIMER_REFRESH);
-            getActivity().sendBroadcast(refreshTimer);
         }
     }
 
