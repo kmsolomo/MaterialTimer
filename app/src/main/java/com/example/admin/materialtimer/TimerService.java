@@ -386,7 +386,7 @@ public class TimerService extends Service{
     private void pauseTimer(){
         if(running){
             running = false;
-            saveTime();
+            saveTimerState();
             timer.cancel();
         }
     }

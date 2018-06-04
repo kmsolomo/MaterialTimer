@@ -109,7 +109,7 @@ public class TimerActivity extends Activity{
     private void initAnimations(float initialX){
 
         //Move to started position
-        ObjectAnimator slideOut = ObjectAnimator.ofFloat(controlButton,"translationX",initialX-100f);
+        ObjectAnimator slideOut = ObjectAnimator.ofFloat(controlButton,"translationX",initialX-150f);
         slideOut.setDuration(500);
         slideOut.setInterpolator(new AccelerateDecelerateInterpolator());
 
@@ -117,7 +117,7 @@ public class TimerActivity extends Activity{
         fadeIn.setDuration(500);
         fadeIn.setInterpolator(new AccelerateDecelerateInterpolator());
 
-        ObjectAnimator stopButtonMoveOut = ObjectAnimator.ofFloat(stopButton,"translationX",initialX+100f);
+        ObjectAnimator stopButtonMoveOut = ObjectAnimator.ofFloat(stopButton,"translationX",initialX+150f);
         stopButtonMoveOut.setDuration(500);
         stopButtonMoveOut.setInterpolator(new AccelerateDecelerateInterpolator());
 
@@ -142,6 +142,18 @@ public class TimerActivity extends Activity{
         animatorIn = new AnimatorSet();
         animatorIn.addListener(animInListener);
         animatorIn.playTogether(slideIn,stopButtonFadeOut,stopButtonMoveIn);
+    }
+
+    private void startNotification(){
+        if(timerStatus != TimerState.Stopped){
+            Message notifyMsg = Message.obtain();
+            notifyMsg.what = TimerService.START_NOTIFICATION;
+            try{
+                timerMessenger.send(notifyMsg);
+            } catch (RemoteException e){
+                Log.e("RemoteException",e.toString());
+            }
+        }
     }
 
     private View.OnClickListener playPauseListener = new View.OnClickListener(){
@@ -192,7 +204,7 @@ public class TimerActivity extends Activity{
             animation = false;
             timerStatus = TimerState.Stopped;
             controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
-            }
+        }
     };
 
     private View.OnClickListener settingsListener = new View.OnClickListener(){
@@ -271,6 +283,7 @@ public class TimerActivity extends Activity{
         timerIntent = new Intent(TimerActivity.this, TimerService.class);
         startService(timerIntent);
 
+        //register receiver for screen off notification
         notificationReceiver = new NotificationReceiver();
         IntentFilter notificationFilter = new IntentFilter();
         notificationFilter.addAction(Intent.ACTION_SCREEN_OFF);
@@ -281,20 +294,6 @@ public class TimerActivity extends Activity{
     protected void onStart(){
         super.onStart();
         bindService(timerIntent, timerConnection, Context.BIND_AUTO_CREATE);
-        Log.v("TimerActivity","onStart()");
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState){
-        super.onSaveInstanceState(outState);
-        if(timerStatus == TimerState.Running){
-            outState.putSerializable("TIMER_STATE",timerStatus);
-        } else if (timerStatus == TimerState.Paused){
-            outState.putSerializable("TIMER_STATE",timerStatus);
-        }
-        outState.putString("CURRENT_TIME",timerView.getText().toString());
-        outState.putBoolean("ANIMATION_STATE",animation);
-        Log.v("TimerActivity","onSaveInstanceState");
     }
 
     @Override
@@ -318,28 +317,12 @@ public class TimerActivity extends Activity{
 
     @Override
     public void onUserLeaveHint(){
-        if(timerStatus != TimerState.Stopped){
-            Message notifyMsg = Message.obtain();
-            notifyMsg.what = TimerService.START_NOTIFICATION;
-            try{
-                timerMessenger.send(notifyMsg);
-            } catch (RemoteException e){
-                Log.e("RemoteException",e.toString());
-            }
-        }
+        startNotification();
     }
 
     @Override
     public void onBackPressed(){
-        if(timerStatus != TimerState.Stopped){
-            Message notifyMsg = Message.obtain();
-            notifyMsg.what = TimerService.START_NOTIFICATION;
-            try{
-                timerMessenger.send(notifyMsg);
-            } catch (RemoteException e){
-                Log.e("RemoteException",e.toString());
-            }
-        }
+        startNotification();
         finish();
     }
 }
