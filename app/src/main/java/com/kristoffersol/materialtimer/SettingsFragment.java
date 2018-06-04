@@ -1,19 +1,13 @@
-package com.example.admin.materialtimer;
+package com.kristoffersol.materialtimer;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.support.v7.preference.SeekBarPreference;
-
-/**
- * Created by admin on 3/5/18.
- */
+import android.preference.PreferenceManager;
 
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -21,6 +15,11 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     String themeDark;
     String themeBlack;
     OnThemeChangeListener themeChangeListener;
+    SharedPreferences sharedPreferences;
+
+    public interface OnThemeChangeListener{
+        void onThemeChange();
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -30,20 +29,20 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         themeLight = getString(R.string.LightTheme);
         themeDark = getString(R.string.DarkTheme);
         themeBlack = getString(R.string.BlackTheme);
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        getPreferenceScreen().getSharedPreferences()
-                .registerOnSharedPreferenceChangeListener(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        getPreferenceScreen().getSharedPreferences()
-                .unregisterOnSharedPreferenceChangeListener(this);
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -66,7 +65,9 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
             throw new ClassCastException(e.toString() + "implement OnThemeChangeListener");
         }
     }
-
+    /**
+     * Trigger recreate of activity to create dynamic theme change
+     */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key){
 
@@ -78,9 +79,5 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
                 themeChangeListener.onThemeChange();
             }
         }
-    }
-
-    public interface OnThemeChangeListener{
-        void onThemeChange();
     }
 }

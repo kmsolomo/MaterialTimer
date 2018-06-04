@@ -1,12 +1,8 @@
-package com.example.admin.materialtimer;
+package com.kristoffersol.materialtimer;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-
-/**
- * Created by admin on 4/3/18.
- */
 
 public class ThemeUtility {
 

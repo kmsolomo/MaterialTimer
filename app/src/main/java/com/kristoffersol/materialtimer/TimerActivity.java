@@ -1,4 +1,4 @@
-package com.example.admin.materialtimer;
+package com.kristoffersol.materialtimer;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
@@ -80,6 +80,10 @@ public class TimerActivity extends Activity{
         }
     }
 
+    /**
+     * Link messenger to TimerService
+     */
+
     private void synchronizeService(){
         Messenger uiMessenger = new Messenger(new UIHandler(Looper.getMainLooper()));
         Message uiMsg= Message.obtain();
@@ -91,6 +95,12 @@ public class TimerActivity extends Activity{
             Log.v("RemoteException", e.toString());
         }
     }
+
+    /**
+     * Update UI
+     * @param state current state of timer
+     * @param sessionState indicates if session has started
+     */
 
     private void stateUpdate(boolean state, int sessionState){
         if(sessionState == 1){
@@ -143,6 +153,10 @@ public class TimerActivity extends Activity{
         animatorIn.addListener(animInListener);
         animatorIn.playTogether(slideIn,stopButtonFadeOut,stopButtonMoveIn);
     }
+
+    /**
+     * Communicate with TimerService to launch notification
+     */
 
     private void startNotification(){
         if(timerStatus != TimerState.Stopped){

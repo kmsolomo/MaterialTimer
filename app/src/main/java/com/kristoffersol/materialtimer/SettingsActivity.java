@@ -1,4 +1,4 @@
-package com.example.admin.materialtimer;
+package com.kristoffersol.materialtimer;
 
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
@@ -11,11 +11,6 @@ import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toolbar;
-
-
-/**
- * Created by admin on 2/14/18.
- */
 
 public class SettingsActivity extends Activity implements SettingsFragment.OnThemeChangeListener{
 
@@ -37,7 +32,7 @@ public class SettingsActivity extends Activity implements SettingsFragment.OnThe
         fragTransaction = fragManager.beginTransaction();
         fragTransaction.replace(R.id.fragment_container, new SettingsFragment()).commit();
 
-        setupToolbar();
+        updateUI();
     }
 
     @Override
@@ -50,12 +45,18 @@ public class SettingsActivity extends Activity implements SettingsFragment.OnThe
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Triggered on list preference change in SettingsFragment
+     */
     @Override
     public void onThemeChange(){
         recreate();
     }
 
-    private void setupToolbar(){
+    /**
+     * Handles UI of toolbar and status bar during theme change
+     */
+    private void updateUI(){
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String appTheme = sharedPref.getString(themeKey,defaultTheme);
 

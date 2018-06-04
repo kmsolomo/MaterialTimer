@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/MaterialTimer.iml" filepath="$PROJECT_DIR$/MaterialTimer.iml" />
       <module fileurl="file://$PROJECT_DIR$/Material_Timer.iml" filepath="$PROJECT_DIR$/Material_Timer.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>

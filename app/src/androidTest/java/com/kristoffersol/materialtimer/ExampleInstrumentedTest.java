@@ -1,4 +1,4 @@
-package com.example.admin.materialtimer;
+package com.kristoffersol.materialtimer;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

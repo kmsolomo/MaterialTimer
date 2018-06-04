@@ -1,4 +1,4 @@
-package com.example.admin.materialtimer;
+package com.kristoffersol.materialtimer;
 
 import android.app.Service;
 import android.content.Intent;
@@ -17,11 +17,6 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.util.Log;
-
-
-/**
- * Created by admin on 4/21/18.
- */
 
 public class TimerService extends Service{
 
@@ -46,7 +41,6 @@ public class TimerService extends Service{
     private final String LOOP_AMOUT_VALUE = "pref_loop_amount";
     private final String VIBRATION = "pref_vibrate";
 
-    public static final String TIMER_REFRESH = "timer_service_refresh";
     public static final String SCREEN_OFF = "timer_screen_off";
     public static final String ACTION_START = "start";
     public static final String ACTION_PAUSE = "pause";
@@ -118,7 +112,6 @@ public class TimerService extends Service{
         workerThread.start();
         timerMessenger = new Messenger(new ServiceHandler(workerThread.getLooper()));
         refreshTimers();
-        Log.v("TimerService","onCreate");
     }
 
     @Override
@@ -148,28 +141,6 @@ public class TimerService extends Service{
         return START_STICKY;
     }
 
-    private void pauseAction(){
-        pauseTimer();
-        startNotification();
-        saveTimerState();
-    }
-
-    private void startAction(){
-        startTimer();
-        startNotification();
-        saveTimerState();
-    }
-
-    private void restartTimer(){
-        restoreTimerState();
-        if(running) {
-            running = false;
-            startTimer();
-        }
-        startNotification();
-        saveTimerState();
-    }
-
     @Override
     public IBinder onBind(Intent intent){
         return timerMessenger.getBinder();
@@ -195,7 +166,29 @@ public class TimerService extends Service{
             workerThread.quit();
         }
         super.onDestroy();
-        Log.v("TimerService","onDestroy()");
+    }
+
+    private void pauseAction(){
+        pauseTimer();
+        startNotification();
+        saveTimerState();
+    }
+
+
+    private void startAction(){
+        startTimer();
+        startNotification();
+        saveTimerState();
+    }
+
+    private void restartTimer(){
+        restoreTimerState();
+        if(running) {
+            running = false;
+            startTimer();
+        }
+        startNotification();
+        saveTimerState();
     }
 
     private void restoreTimerState(){
@@ -206,7 +199,7 @@ public class TimerService extends Service{
         running = sharedPref.getBoolean("running",false);
         sessionCount = sharedPref.getInt("sessionCount",0);
         sessionBeforeLongBreak = sharedPref.getInt("sessionBeforeLongBreak",4);
-        milliSecondsLeft = getTime();
+        milliSecondsLeft = sharedPref.getLong("timeLeft",0);
 
         int timerState = sharedPref.getInt("currentTimer",0);
         if(timerState == 0){
@@ -219,20 +212,18 @@ public class TimerService extends Service{
 
         if(running){
             startForeground(NotificationUtil.NOTIFICATION_ID,
-                    notifUtil.buildNotification(formatTime(getTime()),
+                    notifUtil.buildNotification(formatTime(milliSecondsLeft),
                             true,getTimer()));
-            notifUtil.updateNotification(formatTime(getTime()),getTimer());
+            notifUtil.updateNotification(formatTime(milliSecondsLeft),getTimer());
         } else {
             startForeground(NotificationUtil.NOTIFICATION_ID,
-                    notifUtil.buildNotification(formatTime(getTime()),
+                    notifUtil.buildNotification(formatTime(milliSecondsLeft),
                             false,getTimer()));
-            notifUtil.updateNotification(formatTime(getTime()),getTimer());
+            notifUtil.updateNotification(formatTime(milliSecondsLeft),getTimer());
         }
-        Log.v("TimerService","restoreTimerState");
     }
 
     private void saveTimerState(){
-        saveTime();
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean("sessionStart",sessionStart);
         editor.putBoolean("customFlag",customFlag);
@@ -241,6 +232,7 @@ public class TimerService extends Service{
         editor.putBoolean("running",running);
         editor.putInt("sessionCount",sessionCount);
         editor.putInt("sessionBeforeLongBreak",sessionBeforeLongBreak);
+        editor.putLong("timeLeft",milliSecondsLeft);
 
         if(currentTimer == Timer.Work){
             editor.putInt("currentTimer",0);
@@ -253,6 +245,10 @@ public class TimerService extends Service{
         editor.apply();
     }
 
+    /**
+     * Communicate with client to update UI with timer state
+     */
+
     private void synchronizeClient(){
         connected = true;
         Message msgState = Message.obtain();
@@ -263,7 +259,6 @@ public class TimerService extends Service{
             refreshTimers();
             updateTimer(convertTime(sharedPref.getInt(WORK_TIME,25)));
             msgState.arg1 = 0;
-            Log.v("TimerService","if syncClient()");
         } else {
             if(notification){
                 stopNotification();
@@ -277,18 +272,16 @@ public class TimerService extends Service{
         } catch (RemoteException e){
             Log.d("TimerService", e.toString());
         }
-        Log.v("TimerService","synchronizeClient");
     }
 
     private void startNotification(){
         if(running){
-            startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),true,getTimer()));
+            startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(milliSecondsLeft),true,getTimer()));
         } else {
-            startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(getTime()),false,getTimer()));
+            startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(milliSecondsLeft),false,getTimer()));
         }
-        notifUtil.updateNotification(formatTime(getTime()),getTimer());
+        notifUtil.updateNotification(formatTime(milliSecondsLeft),getTimer());
         notification = true;
-        Log.v("startNotification","startNotification");
     }
 
     private void stopNotification(){
@@ -300,23 +293,15 @@ public class TimerService extends Service{
             }
             notification = false;
         }
-        Log.v("stopNotification","stopNotification");
     }
 
+    /**
+     * Start notification when sessions has started and user turns screen off
+     */
     private void screenOff(){
         if(!connected && sessionStart && !notification){
             startNotification();
         }
-    }
-
-    private void saveTime(){
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putLong("timeLeft",milliSecondsLeft);
-        editor.apply();
-    }
-
-    private long getTime(){
-        return sharedPref.getLong("timeLeft",0);
     }
 
     private long convertTime(int value){
@@ -391,10 +376,18 @@ public class TimerService extends Service{
         }
     }
 
+    /**
+     * Stop the timer service
+     */
+
     private void stopTimer(){
         stopNotification();
         stopSelf();
     }
+
+    /**
+     * Reset timer to starting state
+     */
 
     private void resetTimer(){
         pauseTimer();
@@ -403,6 +396,11 @@ public class TimerService extends Service{
         refreshTimers();
         synchronizeClient();
     }
+
+    /**
+     * Initialize new CountDownTimer that will loop through all timers
+     * @param  timeLeft time to start countdown
+     */
 
     private void timer(long timeLeft){
         timer = new CountDownTimer(timeLeft,countDownInterval) {
@@ -446,6 +444,10 @@ public class TimerService extends Service{
         }.start();
     }
 
+    /**
+     * Directs updates to either notification or main UI
+     * @param milliSecondsLeft current time to display
+     */
     private void updateTimer(long milliSecondsLeft){
         String currentTime = formatTime(milliSecondsLeft);
         String currentTimer = getTimer();

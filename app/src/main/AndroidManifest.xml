@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.admin.materialtimer">
+    package="com.kristoffersol.materialtimer">
 
     <uses-permission android:name="android.permission.VIBRATE"/>
 
@@ -12,24 +12,24 @@
         android:supportsRtl="true"
         android:theme="@style/LightAppTheme">
         <activity
-            android:name=".TimerActivity">
+            android:name="com.kristoffersol.materialtimer.TimerActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".SettingsActivity"
+            android:name="com.kristoffersol.materialtimer.SettingsActivity"
             android:label="Settings"
-            android:parentActivityName=".TimerActivity">
+            android:parentActivityName="com.kristoffersol.materialtimer.TimerActivity">
         </activity>
 
         <receiver
-            android:name=".TimerReceiver">
+            android:name="com.kristoffersol.materialtimer.TimerReceiver">
         </receiver>
 
         <service
-            android:name=".TimerService"
+            android:name="com.kristoffersol.materialtimer.TimerService"
             android:exported="false">
         </service>
 

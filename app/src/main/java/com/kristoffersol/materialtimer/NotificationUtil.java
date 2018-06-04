@@ -1,4 +1,4 @@
-package com.example.admin.materialtimer;
+package com.kristoffersol.materialtimer;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -9,10 +9,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Icon;
 import android.os.Build;
-
-/**
- * Created by admin on 4/19/18.
- */
 
 public class NotificationUtil {
 
@@ -26,6 +22,11 @@ public class NotificationUtil {
     private Notification.Action stopAction;
 
     public static final int NOTIFICATION_ID = 1;
+
+    /**
+     * initialize notification manager and create all actions for notifications
+     * @param context provided by service
+     */
 
     public NotificationUtil(Context context){
         mainContext = context;
@@ -59,6 +60,13 @@ public class NotificationUtil {
             stopAction = new Notification.Action.Builder(R.drawable.ic_stop_24dp, "STOP", stopPendingIntent).build();
         }
     }
+
+    /**
+     * Construct the notification with necessary pending intents and actions
+     * @param currentTime formatted time from to display
+     * @param timerRunning current state of timer
+     * @param timer current timer in loop
+     */
 
     public Notification buildNotification(String currentTime, boolean timerRunning, String timer){
 
@@ -103,6 +111,12 @@ public class NotificationUtil {
 
         return builder.build();
     }
+
+    /**
+     * Updates the timer to reflect current state
+     * @param time current time
+     * @param timer current timer
+     */
 
     public void updateNotification(String time,String timer){
         builder.setContentTitle(timer);
