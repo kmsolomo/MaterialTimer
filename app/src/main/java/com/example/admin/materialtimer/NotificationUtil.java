@@ -30,10 +30,6 @@ public class NotificationUtil {
     public NotificationUtil(Context context){
         mainContext = context;
         notificationManager = (NotificationManager) mainContext.getSystemService(mainContext.NOTIFICATION_SERVICE);
-        initActions();
-    }
-
-    public void initActions(){
 
         //START TIMER
         Intent startIntent = new Intent(mainContext, TimerReceiver.class);
@@ -62,7 +58,6 @@ public class NotificationUtil {
             pauseAction = new Notification.Action.Builder(R.drawable.ic_pause_24dp, "PAUSE", pausePendingIntent).build();
             stopAction = new Notification.Action.Builder(R.drawable.ic_stop_24dp, "STOP", stopPendingIntent).build();
         }
-
     }
 
     public Notification buildNotification(String currentTime, boolean timerRunning, String timer){
@@ -114,9 +109,5 @@ public class NotificationUtil {
         builder.setContentText(time);
         notificationManager.notify(NOTIFICATION_ID, builder.build());
 
-    }
-
-    public void hideTimer(){
-        notificationManager.cancel(NOTIFICATION_ID);
     }
 }

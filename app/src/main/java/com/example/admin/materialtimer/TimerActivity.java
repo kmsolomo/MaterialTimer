@@ -40,7 +40,6 @@ public class TimerActivity extends Activity{
     private TimerState timerStatus = TimerState.Stopped;
     private Intent timerIntent;
     private Messenger timerMessenger;
-    private BroadcastReceiver notificationReceiver;
     private boolean animation = false;
     private AnimatorSet animatorOut,animatorIn;
     private final int THEME_REQUEST_CODE = 1;
@@ -275,29 +274,9 @@ public class TimerActivity extends Activity{
 
         initAnimations(controlButton.getTranslationX());
 
-//        //Restore state
-//        if(savedInstanceState != null){
-//            if(savedInstanceState.get("TIMER_STATE") == TimerState.Running){
-//                timerStatus = TimerState.Running;
-//                controlButton.setImageResource(R.drawable.ic_pause_24dp);
-//            } else if(savedInstanceState.get("TIMER_STATE") == TimerState.Paused){
-//                timerStatus = TimerState.Paused;
-//                controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
-//            }
-//            timerView.setText(savedInstanceState.getString("CURRENT_TIME"));
-//            animation = savedInstanceState.getBoolean("ANIMATION_STATE");
-//            Log.v("TimerActivity","onCreate restoring state");
-//        }
-
         //insures service persists bound lifecycle
         timerIntent = new Intent(TimerActivity.this, TimerService.class);
         startService(timerIntent);
-
-        //Broadcast receiver to send notification when screen off
-        notificationReceiver = new NotificationReceiver();
-        IntentFilter notificationFilter = new IntentFilter();
-        notificationFilter.addAction(Intent.ACTION_SCREEN_OFF);
-        registerReceiver(notificationReceiver,notificationFilter);
     }
 
     @Override
@@ -323,15 +302,18 @@ public class TimerActivity extends Activity{
     @Override
     protected void onStop(){
         super.onStop();
+        if(timerStatus != TimerState.Stopped){
+            Message notifyMsg = Message.obtain();
+            notifyMsg.what = TimerService.START_NOTIFICATION;
+            try{
+                timerMessenger.send(notifyMsg);
+            } catch (RemoteException e){
+                Log.e("RemoteException",e.toString());
+            }
+            Log.v("onUserLeaveHint()","notification message sent");
+        }
         unbindService(timerConnection);
         Log.v("TimerActivity","onStop()");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(notificationReceiver);
-        Log.v("TimerActivity","onDestory()");
     }
 
     @Override
@@ -339,34 +321,5 @@ public class TimerActivity extends Activity{
         if(requestCode == THEME_REQUEST_CODE){
             recreate();
         }
-    }
-
-    @Override
-    protected void onUserLeaveHint(){
-        if(timerStatus != TimerState.Stopped){
-            Message notifyMsg = Message.obtain();
-            notifyMsg.what = TimerService.START_NOTIFICATION;
-            try{
-                timerMessenger.send(notifyMsg);
-            } catch (RemoteException e){
-                Log.e("RemoteException",e.toString());
-            }
-            Log.v("onUserLeaveHint()","notification message sent");
-        }
-    }
-
-    @Override
-    public void onBackPressed(){
-        if(timerStatus != TimerState.Stopped){
-            Message notifyMsg = Message.obtain();
-            notifyMsg.what = TimerService.START_NOTIFICATION;
-            try{
-                timerMessenger.send(notifyMsg);
-            } catch (RemoteException e){
-                Log.e("RemoteException",e.toString());
-            }
-            Log.v("onUserLeaveHint()","notification message sent");
-        }
-        finish();
     }
 }

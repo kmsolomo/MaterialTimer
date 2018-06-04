@@ -1,7 +1,6 @@
 package com.example.admin.materialtimer;
 
 import android.app.Service;
-import android.content.ComponentCallbacks2;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -30,15 +29,13 @@ public class TimerService extends Service{
         Work, Break, LongBreak
     }
 
-    private Timer timer;
-    private Handler timerHandler;
+    private Timer currentTimer;
     private HandlerThread workerThread;
-    private long milliSecondsLeft,countDownInterval;
+    private long milliSecondsLeft,countDownInterval,workTime,breakTime,longBreakTime;
     private int sessionBeforeLongBreak,sessionCount;
     private boolean sessionStart,customFlag,connected,notification,running;
     private SharedPreferences sharedPref;
-    private Runnable workRun,breakRun,longBreakRun;
-    private CountDownTimer workTimer,breakTimer,longBreakTimer,customTimer;
+    private CountDownTimer timer;
     private NotificationUtil notifUtil;
     private Messenger timerMessenger, uiMessenger;
     private Vibrator vibrator;
@@ -100,7 +97,7 @@ public class TimerService extends Service{
     @Override
     public void onCreate(){
         super.onCreate();
-        timer = Timer.Work;
+        currentTimer = Timer.Work;
         sessionStart = false;
         customFlag = false;
         connected = false;
@@ -119,7 +116,6 @@ public class TimerService extends Service{
         notifUtil = new NotificationUtil(this);
         workerThread = new HandlerThread("WorkerThread", Process.THREAD_PRIORITY_DEFAULT);
         workerThread.start();
-        timerHandler = new Handler(workerThread.getLooper());
         timerMessenger = new Messenger(new ServiceHandler(workerThread.getLooper()));
         refreshTimers();
         Log.v("TimerService","onCreate");
@@ -143,9 +139,6 @@ public class TimerService extends Service{
                         break;
                     case ACTION_RESET:
                         stopTimer();
-                        break;
-                    case SCREEN_OFF:
-                        screenOffNotification();
                         break;
                     default:
                         break;
@@ -217,11 +210,11 @@ public class TimerService extends Service{
 
         int timerState = sharedPref.getInt("currentTimer",0);
         if(timerState == 0){
-            timer = Timer.Work;
+            currentTimer = Timer.Work;
         } else if(timerState == 1){
-            timer = Timer.Break;
+            currentTimer = Timer.Break;
         } else{
-            timer = Timer.LongBreak;
+            currentTimer = Timer.LongBreak;
         }
 
         if(running){
@@ -249,9 +242,9 @@ public class TimerService extends Service{
         editor.putInt("sessionCount",sessionCount);
         editor.putInt("sessionBeforeLongBreak",sessionBeforeLongBreak);
 
-        if(timer == Timer.Work){
+        if(currentTimer == Timer.Work){
             editor.putInt("currentTimer",0);
-        } else if(timer == Timer.Break){
+        } else if(currentTimer == Timer.Break){
             editor.putInt("currentTimer",1);
         } else {
             editor.putInt("currentTimer",2);
@@ -266,7 +259,7 @@ public class TimerService extends Service{
         msgState.what = TimerActivity.UPDATE_STATE;
         msgState.obj = running;
 
-        if(timer == Timer.Work && !sessionStart){
+        if(currentTimer == Timer.Work && !sessionStart){
             refreshTimers();
             updateTimer(convertTime(sharedPref.getInt(WORK_TIME,25)));
             msgState.arg1 = 0;
@@ -275,7 +268,6 @@ public class TimerService extends Service{
             if(notification){
                 stopNotification();
             }
-            //updateTimer(getTime());
             updateTimer(milliSecondsLeft);
             msgState.arg1 = 1;
         }
@@ -326,9 +318,9 @@ public class TimerService extends Service{
     }
 
     private String getTimer(){
-        if(timer == Timer.Work){
+        if(currentTimer == Timer.Work){
             return "Work";
-        } else if (timer == Timer.Break){
+        } else if (currentTimer == Timer.Break){
             return "Break";
         } else {
             return "Long Break";
@@ -362,67 +354,6 @@ public class TimerService extends Service{
         return currentTime;
     }
 
-    private void startTimer(){
-        if(timer == Timer.Work && !sessionStart && !running){
-            sessionStart = true;
-            running = true;
-            timerHandler.post(workRun);
-            Log.v("TimerService","starTimer() if");
-        } else if(!running){
-            running = true;
-            startCustomTimer(milliSecondsLeft);
-            Log.v("TimerService","starTimer() else if");
-        }
-    }
-
-    private void pauseTimer(){
-        if(running){
-            running = false;
-            if(customFlag){
-                saveTime();
-                if(customTimer != null){
-                    customTimer.cancel();
-                }
-            } else {
-                switch(timer){
-                    case Work:
-                        saveTime();
-                        if(workTimer != null){
-                            workTimer.cancel();
-                        }
-                        break;
-                    case Break:
-                        saveTime();
-                        if(breakTimer != null){
-                            breakTimer.cancel();
-                        }
-                        break;
-                    case LongBreak:
-                        saveTime();
-                        if(longBreakTimer != null){
-                            longBreakTimer.cancel();
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-    }
-
-    private void stopTimer(){
-        stopNotification();
-        stopSelf();
-    }
-
-    private void resetTimer(){
-        pauseTimer();
-        timer = Timer.Work;
-        sessionStart = false;
-        refreshTimers();
-        synchronizeClient();
-    }
-
     private void vibrate(){
         boolean vibratePref = sharedPref.getBoolean(VIBRATION,false);
         if(vibratePref){
@@ -434,9 +365,44 @@ public class TimerService extends Service{
         }
     }
 
-    private void startCustomTimer(long timeLeft){
-        customFlag = true;
-        customTimer = new CountDownTimer(timeLeft,countDownInterval) {
+    private void startTimer(){
+        if(currentTimer == Timer.Work && !sessionStart && !running){
+            sessionStart = true;
+            running = true;
+            timer(convertTime(sharedPref.getInt(WORK_TIME,25)));
+            Log.v("TimerService","startTimer() if");
+        } else if(!running){
+            running = true;
+            timer(milliSecondsLeft);
+            Log.v("TimerService","startTimer() else if");
+        }
+    }
+
+    private void pauseTimer(){
+        if(running){
+            running = false;
+            saveTime();
+            timer.cancel();
+            Log.v("TimerService","pauseTimer()");
+        }
+    }
+
+    private void stopTimer(){
+        stopNotification();
+        stopSelf();
+    }
+
+    private void resetTimer(){
+        pauseTimer();
+        currentTimer= Timer.Work;
+        sessionStart = false;
+        refreshTimers();
+        synchronizeClient();
+        Log.v("TimerService","resetTimer");
+    }
+
+    private void timer(long timeLeft){
+        timer = new CountDownTimer(timeLeft,countDownInterval) {
             @Override
             public void onTick(long millisUntilFinished) {
                 milliSecondsLeft = millisUntilFinished;
@@ -447,28 +413,34 @@ public class TimerService extends Service{
             public void onFinish() {
                 vibrate();
                 customFlag = false;
-                switch (timer){
+                switch (currentTimer){
                     case Work:
                         if(sessionCount < sessionBeforeLongBreak){
                             sessionCount++;
-                            timerHandler.post(breakRun);
+                            currentTimer = Timer.Break;
+                            refreshTimers();
+                            timer(breakTime);
                         } else {
                             sessionCount = 0;
-                            timerHandler.post(longBreakRun);
+                            currentTimer = Timer.LongBreak;
+                            timer(longBreakTime);
                         }
                         break;
                     case Break:
-                        timerHandler.post(workRun);
+                        currentTimer = Timer.Work;
+                        refreshTimers();
+                        timer(workTime);
                         break;
                     case LongBreak:
-                        timerHandler.post(workRun);
+                        currentTimer = Timer.Work;
+                        refreshTimers();
+                        timer(workTime);
                         break;
                     default:
                         break;
                 }
             }
         }.start();
-
     }
 
     private void updateTimer(long milliSecondsLeft){
@@ -492,78 +464,9 @@ public class TimerService extends Service{
     }
 
     private void refreshTimers(){
-        final long workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
-        final long breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
-        final long longBreakTime = convertTime(sharedPref.getInt(LONG_BREAK_TIME,15));
-
+        workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
+        breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
+        longBreakTime = convertTime(sharedPref.getInt(LONG_BREAK_TIME,15));
         sessionBeforeLongBreak = sharedPref.getInt(LOOP_AMOUT_VALUE,4);
-
-        //Issue with CountDownTimer implementation
-        //CountDownInterval < 1000 as work around
-        workRun = new Runnable(){
-            @Override
-            public void run(){
-                timer = Timer.Work;
-                workTimer = new CountDownTimer(workTime,countDownInterval) {
-                    @Override
-                    public void onTick(long l) {
-                        milliSecondsLeft = l;
-                        updateTimer(milliSecondsLeft);
-                    }
-
-                    @Override
-                    public void onFinish() {
-                        vibrate();
-                        if(sessionCount < sessionBeforeLongBreak){
-                            sessionCount++;
-                            timerHandler.post(breakRun);
-                        } else {
-                            sessionCount = 0;
-                            timerHandler.post(longBreakRun);
-                        }
-                    }
-                }.start();
-            }
-        };
-
-        breakRun = new Runnable() {
-            @Override
-            public void run() {
-                timer = Timer.Break;
-                breakTimer = new CountDownTimer(breakTime,countDownInterval) {
-                    @Override
-                    public void onTick(long l) {
-                        milliSecondsLeft = l;
-                        updateTimer(milliSecondsLeft);
-                    }
-
-                    @Override
-                    public void onFinish() {
-                        vibrate();
-                        timerHandler.post(workRun);
-                    }
-                }.start();
-            }
-        };
-
-        longBreakRun = new Runnable(){
-            @Override
-            public void run() {
-                timer = Timer.LongBreak;
-                longBreakTimer = new CountDownTimer(longBreakTime,countDownInterval) {
-                    @Override
-                    public void onTick(long l) {
-                        milliSecondsLeft = l;
-                        updateTimer(milliSecondsLeft);
-                    }
-
-                    @Override
-                    public void onFinish() {
-                        vibrate();
-                        timerHandler.post(workRun);
-                    }
-                }.start();
-            }
-        };
     }
 }
