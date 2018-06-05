@@ -4,12 +4,6 @@
 
 MaterialTimer is a productivity focused timer that alternates between three configurable timers.
 
-<p align="left">
-  <img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" alt="Get it on Google Play" height="80%" width="40%" align="left">
-</p>
-
-<br><br>
-
 <p float="left">
   <img src="images/Screenshot_20180605-103004.png" width="180" height="320">
   <img src="images/Screenshot_20180605-103058.png" width="180" height="320">
@@ -26,6 +20,10 @@ MaterialTimer is a productivity focused timer that alternates between three conf
 - Pause, resume, and reset functionality
 - Vibrate at the end of each session
 - Runs in background
+
+<p float="left">
+  <img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" alt="Get it on Google Play" height="30%" width="30%">
+</p>
 
 Copyright 2018 Kristoffer Solomon
 
