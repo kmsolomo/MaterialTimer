@@ -2,13 +2,13 @@
 
 <p align="center"><img src="https://github.com/kmsolomo/MaterialTimer/blob/master/app/src/main/ic_launcher-web.png" width="100" height="100"/></p>
 
-MaterialTimer is a productivity focused timer that alternates between three configurable timers. Also, it is free and open source!
+MaterialTimer is a productivity focused timer that alternates between three configurable timers.
 
-<p align="left"><img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" alt="Get it on Google Play" height="80%" width="40%" align="left"></p>
-
-<img src="images/Screenshot_20180605-103004.png" width="180" height="320">
-<img src="images/Screenshot_20180605-103058.png" width="180" height="320">
-<img src="images/Screenshot_20180605-103109.png" width="180" height="320">
+<p float="left">
+  <img src="images/Screenshot_20180605-103004.png" width="180" height="320">
+  <img src="images/Screenshot_20180605-103058.png" width="180" height="320">
+  <img src="images/Screenshot_20180605-103109.png" width="180" height="320">
+</p>
 
 **Features:**
 
@@ -20,6 +20,10 @@ MaterialTimer is a productivity focused timer that alternates between three conf
 - Pause, resume, and reset functionality
 - Vibrate at the end of each session
 - Runs in background
+
+<p float="left">
+  <img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" alt="Get it on Google Play" height="30%" width="30%">
+</p>
 
 Copyright 2018 Kristoffer Solomon
 
