@@ -21,9 +21,11 @@ MaterialTimer is a productivity focused timer that alternates between three conf
 - Vibrate at the end of each session
 - Runs in background
 
-<p float="left">
-  <img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" alt="Get it on Google Play" height="30%" width="30%">
-</p>
+
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" alt="Get it on Google Play" height="30%" width="30%" align="left">](https://play.google.com/store/apps/details?id=com.kristoffersol.materialtimer)
+
+<br></br>
+<br></br>
 
 Copyright 2018 Kristoffer Solomon
 
