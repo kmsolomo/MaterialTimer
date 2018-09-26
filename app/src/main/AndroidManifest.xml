@@ -21,6 +21,7 @@
     package="com.kristoffersol.materialtimer">
 
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application
         android:allowBackup="true"
@@ -28,6 +29,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/LightAppTheme">
+
         <activity
             android:name="com.kristoffersol.materialtimer.TimerActivity">
             <intent-filter>
@@ -35,6 +37,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name="com.kristoffersol.materialtimer.SettingsActivity"
             android:label="Settings"

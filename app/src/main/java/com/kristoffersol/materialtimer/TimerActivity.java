@@ -22,6 +22,7 @@ package com.kristoffersol.materialtimer;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -36,15 +37,15 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-public class TimerActivity extends Activity{
+public class TimerActivity extends AppCompatActivity{
 
     public enum TimerState {
         Running, Stopped, Paused
@@ -54,7 +55,7 @@ public class TimerActivity extends Activity{
     public static final int UPDATE_STATE = 2;
 
     private FloatingActionButton controlButton,stopButton;
-    private ImageButton settingsButton;
+    private ImageView settingsButton;
     private TextView timerView;
     private TimerState timerStatus = TimerState.Stopped;
     private Intent timerIntent;
@@ -249,6 +250,7 @@ public class TimerActivity extends Activity{
     };
 
     private Animator.AnimatorListener animOutListener = new Animator.AnimatorListener() {
+        @SuppressLint("RestrictedApi")
         @Override
         public void onAnimationStart(Animator animator) {
             stopButton.setVisibility(View.VISIBLE);
@@ -276,9 +278,10 @@ public class TimerActivity extends Activity{
             stopButton.setClickable(false);
             controlButton.setClickable(false);
         }
+        @SuppressLint("RestrictedApi")
         @Override
         public void onAnimationEnd(Animator animator) {
-            stopButton.setVisibility(View.GONE);
+            stopButton.setVisibility(View.INVISIBLE);
             controlButton.setClickable(true);
         }
         @Override

@@ -74,16 +74,17 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         }
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public void onAttach(Activity activity){
-        super.onAttach(activity);
-        try{
-            themeChangeListener = (OnThemeChangeListener) activity;
-        } catch(ClassCastException e) {
-            throw new ClassCastException(e.toString() + "implement OnThemeChangeListener");
-        }
-    }
+//    @SuppressWarnings("deprecation")
+//    @Override
+//    public void onAttach(Activity activity){
+//        super.onAttach(activity);
+//        try{
+//            themeChangeListener = (OnThemeChangeListener) activity;
+//        } catch(ClassCastException e) {
+//            throw new ClassCastException(e.toString() + "implement OnThemeChangeListener");
+//        }
+//    }
+
     /**
      * Trigger recreate of activity to create dynamic theme change
      */

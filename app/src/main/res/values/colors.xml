@@ -42,4 +42,10 @@
     <!-- Black -->
     <color name="colorBlackPrimary">#000000</color>
 
+    <!-- Icon Background -->
+    <color name="ic_launcher_background">@color/colorAccent</color>
+
+    <!-- FAB Background Color -->
+    <color name="fab_background">@color/colorAccent</color>
+
 </resources>
