@@ -23,6 +23,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.util.Log;
 
 public class TimerReceiver extends BroadcastReceiver {
 
@@ -35,26 +36,26 @@ public class TimerReceiver extends BroadcastReceiver {
     }
 
     /**
-     * Interface with TimerService
+     * Interface with PomodoroService
      */
 
     @Override
     public void onReceive(Context context, Intent intent){
         if(intent.getAction() != null){
             switch(intent.getAction()){
-                case TimerService.ACTION_PAUSE:
-                    Intent pauseIntent = new Intent(context, TimerService.class);
-                    pauseIntent.setAction(TimerService.ACTION_PAUSE);
+                case PomodoroService.ACTION_PAUSE:
+                    Intent pauseIntent = new Intent(context, PomodoroService.class);
+                    pauseIntent.setAction(PomodoroService.ACTION_PAUSE);
                     startService(context,pauseIntent);
                     break;
-                case TimerService.ACTION_START:
-                    Intent startIntent = new Intent(context, TimerService.class);
-                    startIntent.setAction(TimerService.ACTION_START);
+                case PomodoroService.ACTION_START:
+                    Intent startIntent = new Intent(context, PomodoroService.class);
+                    startIntent.setAction(PomodoroService.ACTION_START);
                     startService(context,startIntent);
                     break;
-                case TimerService.ACTION_RESET:
-                    Intent resetIntent = new Intent(context, TimerService.class);
-                    resetIntent.setAction(TimerService.ACTION_RESET);
+                case PomodoroService.ACTION_RESET:
+                    Intent resetIntent = new Intent(context, PomodoroService.class);
+                    resetIntent.setAction(PomodoroService.ACTION_RESET);
                     startService(context,resetIntent);
                     break;
             }

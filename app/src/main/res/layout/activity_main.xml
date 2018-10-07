@@ -26,71 +26,37 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/timerTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:textAlignment="center"
-            android:textAppearance="@android:style/TextAppearance.Material.Large"
-            android:textColor="@color/textColorLight"
-            android:textSize="100sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/guidelineUI"
-            tools:text="17:41" />
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/playPauseButton"
+        <android.support.constraint.Guideline
+            android:id="@+id/guidelineToolbar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/guidelineUI"
-            app:layout_constraintVertical_bias="0.20"
-            app:backgroundTint="@color/fab_background"
-            app:srcCompat="@drawable/ic_play_arrow_24dp" />
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent=".10" />
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/stopButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/guidelineUI"
-            app:layout_constraintVertical_bias="0.20"
-            app:backgroundTint="@color/fab_background"
-            app:srcCompat="@drawable/ic_stop_24dp" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/guidelineToolbar"/>
 
         <ImageView
             android:id="@+id/SettingsButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="32dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginTop="8dp"
             android:clickable="true"
-            android:focusable="true"
             android:contentDescription="@string/Settings"
+            android:focusable="true"
+            app:layout_constraintVertical_bias="0.50"
+            app:layout_constraintBottom_toTopOf="@id/guidelineToolbar"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_settings_light_24dp" />
-
-        <android.support.constraint.Guideline
-            android:id="@+id/guidelineUI"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent=".70" />
 
     </android.support.constraint.ConstraintLayout>
 

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright 2018 Kristoffer Solomon
+  ~
+  ~ This file is part of MaterialTimer.
+  ~
+  ~ MaterialTimer is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ MaterialTimer is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with MaterialTimer.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <variable
+            name="viewModel"
+            type="com.kristoffersol.materialtimer.viewmodel.PomodoroViewModel"/>
+
+        <variable
+            name="fabPlayPause"
+            type="Boolean"/>
+
+        <variable
+            name="fabStop"
+            type="Boolean"/>
+
+        <variable
+            name="fabStopVisibility"
+            type="Boolean"/>
+
+        <variable
+            name="fabPlayPauseImage"
+            type="Boolean"/>
+    </data>
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/timerTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:textAlignment="center"
+            android:textAppearance="@android:style/TextAppearance.Material.Large"
+            android:textColor="@color/textColorLight"
+            android:textSize="100sp"
+            android:text="@{viewModel.currentTime}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/guidelineUI"
+            tools:text="17:41" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/playPauseButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/guidelineUI"
+            app:layout_constraintVertical_bias="0.20"
+            app:backgroundTint="@color/fab_background"
+            app:srcCompat="@drawable/ic_play_arrow_24dp"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/stopButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:clickable="@{fabStop, default = false}"
+            android:focusable="true"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/guidelineUI"
+            app:layout_constraintVertical_bias="0.20"
+            app:backgroundTint="@color/fab_background"
+            app:srcCompat="@drawable/ic_stop_24dp" />
+
+        <android.support.constraint.Guideline
+            android:id="@+id/guidelineUI"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent=".70" />
+
+    </android.support.constraint.ConstraintLayout>
+
+</layout>

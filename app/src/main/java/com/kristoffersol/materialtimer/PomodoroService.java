@@ -37,7 +37,11 @@ import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-public class TimerService extends Service{
+import com.kristoffersol.materialtimer.data.PomodoroRepository;
+import com.kristoffersol.materialtimer.util.InjectorUtils;
+import com.kristoffersol.materialtimer.util.NotificationUtil;
+
+public class PomodoroService extends Service{
 
     public enum Timer{
         Work, Break, LongBreak
@@ -53,6 +57,10 @@ public class TimerService extends Service{
     private NotificationUtil notifUtil;
     private Messenger timerMessenger, uiMessenger;
     private Vibrator vibrator;
+
+
+    //Testing
+    private PomodoroRepository pomodoroRepository;
 
     private final String WORK_TIME = "pref_work_time";
     private final String BREAK_TIME = "pref_break_time";
@@ -93,7 +101,7 @@ public class TimerService extends Service{
                     break;
                 case REGISTER_CLIENT:
                     uiMessenger = msg.replyTo;
-                    synchronizeClient();
+//                    synchronizeClient();
                     break;
                 case START_NOTIFICATION:
                     startNotification();
@@ -125,12 +133,24 @@ public class TimerService extends Service{
             vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         }
 
+        pomodoroRepository = InjectorUtils.providePomodoroRepository();
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         notifUtil = new NotificationUtil(this);
         workerThread = new HandlerThread("WorkerThread", Process.THREAD_PRIORITY_DEFAULT);
         workerThread.start();
         timerMessenger = new Messenger(new ServiceHandler(workerThread.getLooper()));
         refreshTimers();
+        init();
+        Log.i("onCreate()","POMODORO SERVICE ONCREATE");
+    }
+
+    private void init(){
+        //timer setup
+        //set value of currentime
+        String initialTime = formatTime(convertTime(sharedPref.getInt(WORK_TIME,25)));
+        Log.i("init()","before setTime()");
+        pomodoroRepository.setTime(initialTime);
+        Log.i("init()","after setTime()");
     }
 
     @Override
@@ -142,6 +162,7 @@ public class TimerService extends Service{
                 switch(intent.getAction()){
                     case ACTION_START:
                         startAction();
+                        Log.i("startAction()","START TIMER ACTION");
                         break;
                     case ACTION_PAUSE:
                         pauseAction();
@@ -196,7 +217,7 @@ public class TimerService extends Service{
 
     private void startAction(){
         startTimer();
-        startNotification();
+//        startNotification();
         saveTimerState();
     }
 
@@ -264,34 +285,34 @@ public class TimerService extends Service{
         editor.apply();
     }
 
-    /**
-     * Communicate with client to update UI with timer state
-     */
-
-    private void synchronizeClient(){
-        connected = true;
-        Message msgState = Message.obtain();
-        msgState.what = TimerActivity.UPDATE_STATE;
-        msgState.obj = running;
-
-        if(currentTimer == Timer.Work && !sessionStart){
-            refreshTimers();
-            updateTimer(convertTime(sharedPref.getInt(WORK_TIME,25)));
-            msgState.arg1 = 0;
-        } else {
-            if(notification){
-                stopNotification();
-            }
-            updateTimer(milliSecondsLeft);
-            msgState.arg1 = 1;
-        }
-
-        try{
-            uiMessenger.send(msgState);
-        } catch (RemoteException e){
-            Log.d("TimerService", e.toString());
-        }
-    }
+//    /**
+//     * Communicate with client to update UI with timer state
+//     */
+//
+//    private void synchronizeClient(){
+//        connected = true;
+//        Message msgState = Message.obtain();
+//        msgState.what = TimerActivity.UPDATE_STATE;
+//        msgState.obj = running;
+//
+//        if(currentTimer == Timer.Work && !sessionStart){
+//            refreshTimers();
+//            updateTimer(convertTime(sharedPref.getInt(WORK_TIME,25)));
+//            msgState.arg1 = 0;
+//        } else {
+//            if(notification){
+//                stopNotification();
+//            }
+//            updateTimer(milliSecondsLeft);
+//            msgState.arg1 = 1;
+//        }
+//
+//        try{
+//            uiMessenger.send(msgState);
+//        } catch (RemoteException e){
+//            Log.d("PomodoroService", e.toString());
+//        }
+//    }
 
     private void startNotification(){
         if(running){
@@ -413,7 +434,7 @@ public class TimerService extends Service{
         currentTimer= Timer.Work;
         sessionStart = false;
         refreshTimers();
-        synchronizeClient();
+//        synchronizeClient();
     }
 
     /**
@@ -469,21 +490,25 @@ public class TimerService extends Service{
      */
     private void updateTimer(long milliSecondsLeft){
         String currentTime = formatTime(milliSecondsLeft);
-        String currentTimer = getTimer();
-        if(notification){
-            notifUtil.updateNotification(currentTime,currentTimer);
-        } else {
-            if(uiMessenger != null){
-                Message updateUI = Message.obtain();
-                updateUI.what = TimerActivity.UPDATE_TIME;
-                updateUI.obj = currentTime;
-                try{
-                    uiMessenger.send(updateUI);
-                } catch(RemoteException e){
-                    Log.e("RemoteException",e.toString());
-                }
-            }
-        }
-        saveTimerState();
+//        String currentTimer = getTimer();
+//        if(notification){
+//            notifUtil.updateNotification(currentTime,currentTimer);
+//        } else {
+////            if(uiMessenger != null){
+////                Message updateUI = Message.obtain();
+////                updateUI.what = TimerActivity.UPDATE_TIME;
+////                updateUI.obj = currentTime;
+////                try{
+////                    uiMessenger.send(updateUI);
+////                } catch(RemoteException e){
+////                    Log.e("RemoteException",e.toString());
+////                }
+////            }
+//
+//            //Write time to repository
+//            pomodoroRepository.setTime(currentTime);
+//        }
+//        saveTimerState();
+        pomodoroRepository.setTime(currentTime);
     }
 }

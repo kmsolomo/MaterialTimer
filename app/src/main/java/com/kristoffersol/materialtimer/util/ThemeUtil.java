@@ -17,13 +17,15 @@
  * along with MaterialTimer.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.kristoffersol.materialtimer;
+package com.kristoffersol.materialtimer.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-public class ThemeUtility {
+import com.kristoffersol.materialtimer.R;
+
+public class ThemeUtil {
 
     private static final String themeKey = "pref_theme_value";
 

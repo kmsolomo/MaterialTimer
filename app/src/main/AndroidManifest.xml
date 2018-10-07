@@ -41,17 +41,14 @@
         <activity
             android:name="com.kristoffersol.materialtimer.SettingsActivity"
             android:label="Settings"
-            android:parentActivityName="com.kristoffersol.materialtimer.TimerActivity">
-        </activity>
+            android:parentActivityName="com.kristoffersol.materialtimer.TimerActivity"/>
 
         <receiver
-            android:name="com.kristoffersol.materialtimer.TimerReceiver">
-        </receiver>
+            android:name="com.kristoffersol.materialtimer.TimerReceiver"/>
 
         <service
-            android:name="com.kristoffersol.materialtimer.TimerService"
-            android:exported="false">
-        </service>
+            android:name="com.kristoffersol.materialtimer.PomodoroService"
+            android:exported="false"/>
 
     </application>
 </manifest>

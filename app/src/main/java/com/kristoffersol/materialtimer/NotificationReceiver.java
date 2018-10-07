@@ -29,8 +29,8 @@ public class NotificationReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent){
         if(intent.getAction() != null){
             if(intent.getAction().equals(Intent.ACTION_SCREEN_OFF)){
-                Intent notificationIntent = new Intent(context, TimerService.class);
-                notificationIntent.setAction(TimerService.SCREEN_OFF);
+                Intent notificationIntent = new Intent(context, PomodoroService.class);
+                notificationIntent.setAction(PomodoroService.SCREEN_OFF);
                 context.startService(notificationIntent);
             }
         }

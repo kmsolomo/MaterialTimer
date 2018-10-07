@@ -31,6 +31,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toolbar;
 
+import com.kristoffersol.materialtimer.util.ThemeUtil;
+
 public class SettingsActivity extends Activity implements SettingsFragment.OnThemeChangeListener{
 
     private Toolbar bar;
@@ -44,7 +46,7 @@ public class SettingsActivity extends Activity implements SettingsFragment.OnThe
     protected void onCreate(Bundle onSaveInstanceState){
 
         super.onCreate(onSaveInstanceState);
-        ThemeUtility.themeCheck(this);
+        ThemeUtil.themeCheck(this);
         setContentView(R.layout.settings);
 
         fragManager = getFragmentManager();

@@ -17,7 +17,7 @@
  * along with MaterialTimer.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.kristoffersol.materialtimer;
+package com.kristoffersol.materialtimer.util;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -28,6 +28,11 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Icon;
 import android.os.Build;
+
+import com.kristoffersol.materialtimer.R;
+import com.kristoffersol.materialtimer.TimerActivity;
+import com.kristoffersol.materialtimer.TimerReceiver;
+import com.kristoffersol.materialtimer.PomodoroService;
 
 public class NotificationUtil {
 
@@ -53,17 +58,17 @@ public class NotificationUtil {
 
         //START TIMER
         Intent startIntent = new Intent(mainContext, TimerReceiver.class);
-        startIntent.setAction(TimerService.ACTION_START);
+        startIntent.setAction(PomodoroService.ACTION_START);
         PendingIntent startPendingIntent = PendingIntent.getBroadcast(mainContext, 0, startIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         //PAUSE TIMER
         Intent pauseIntent = new Intent(mainContext, TimerReceiver.class);
-        pauseIntent.setAction(TimerService.ACTION_PAUSE);
+        pauseIntent.setAction(PomodoroService.ACTION_PAUSE);
         PendingIntent pausePendingIntent = PendingIntent.getBroadcast(mainContext,0,pauseIntent,PendingIntent.FLAG_UPDATE_CURRENT);
 
         //STOP TIMER
         Intent stopIntent = new Intent(mainContext, TimerReceiver.class);
-        stopIntent.setAction(TimerService.ACTION_RESET);
+        stopIntent.setAction(PomodoroService.ACTION_RESET);
         PendingIntent stopPendingIntent = PendingIntent.getBroadcast(mainContext,0,stopIntent,PendingIntent.FLAG_UPDATE_CURRENT);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
