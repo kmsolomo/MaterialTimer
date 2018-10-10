@@ -48,192 +48,11 @@ import com.kristoffersol.materialtimer.viewmodel.PomodoroViewModelFactory;
 
 public class PomodoroFragment extends Fragment {
 
-    public enum TimerState {
-        Running, Stopped, Paused
-    }
-
     private FragmentTimerBinding mBinding;
     private PomodoroViewModel pomodoroViewModel;
-
-
     private AnimatorSet animatorOut,animatorIn;
-    private boolean animation = false;
 
-//    private TimerActivity.TimerState timerStatus = TimerActivity.TimerState.Stopped;
-//    private Messenger timerMessenger;
-
-    public static final int UPDATE_TIME = 1;
-    public static final int UPDATE_STATE = 2;
-
-//    private ServiceConnection timerConnection = new ServiceConnection(){
-//        @Override
-//        public void onServiceConnected(ComponentName className, IBinder service){
-//            timerMessenger = new Messenger(service);
-//            synchronizeService();
-//        }
-//
-//        @Override
-//        public void onServiceDisconnected(ComponentName arg0){
-//            timerMessenger = null;
-//        }
-//    };
-
-//    private final class UIHandler extends Handler {
-//
-//        public UIHandler(Looper looper){
-//            super(looper);
-//        }
-//        @Override
-//        public void handleMessage (Message message){
-//            switch(message.what){
-//                case UPDATE_TIME:
-//                    String currentTime = (String) message.obj;
-////                    timerView.setText(currentTime);
-//                    //change time in viewmodel
-//                    break;
-//                case UPDATE_STATE:
-//                    boolean state = (boolean) message.obj;
-//                    //viewmodel State
-////                    stateUpdate(state,message.arg1);
-//                    break;
-//                default:
-//                    super.handleMessage(message);
-//            }
-//        }
-//    }
-
-//    /**
-//     * Update UI
-//     * @param state current state of timer
-//     * @param sessionState indicates if session has started
-//     */
-//
-//    private void stateUpdate(boolean state, int sessionState){
-//        if(sessionState == 1){
-//            if(state){
-//                timerStatus = TimerActivity.TimerState.Running;
-//                controlButton.setImageResource(R.drawable.ic_pause_24dp);
-//            } else {
-//                timerStatus = TimerActivity.TimerState.Paused;
-//                controlButton.setImageResource(R.drawable.ic_play_arrow_24dp);
-//            }
-//            animatorOut.start();
-//            animation = true;
-//        }
-//    }
-
-    /**
-     * Link messenger to PomodoroService
-     */
-
-//    private void synchronizeService(){
-//        Messenger uiMessenger = new Messenger(new UIHandler(Looper.getMainLooper()));
-//        Message uiMsg= Message.obtain();
-//        uiMsg.what = PomodoroService.REGISTER_CLIENT;
-//        uiMsg.replyTo = uiMessenger;
-//        try {
-//            timerMessenger.send(uiMsg);
-//        } catch (RemoteException e){
-//            Log.v("RemoteException", e.toString());
-//        }
-//    }
-
-    private Animator.AnimatorListener animOutListener = new Animator.AnimatorListener() {
-        @SuppressLint("RestrictedApi")
-        @Override
-        public void onAnimationStart(Animator animator) {
-            mBinding.setFabStopVisibility(true);
-            mBinding.setFabPlayPause(false);
-            mBinding.setFabStop(false);
-        }
-        @Override
-        public void onAnimationEnd(Animator animator) {
-            mBinding.setFabPlayPause(true);
-            mBinding.setFabStop(true);
-        }
-        @Override
-        public void onAnimationCancel(Animator animator) {
-
-        }
-        @Override
-        public void onAnimationRepeat(Animator animator) {
-
-        }
-    };
-
-    private Animator.AnimatorListener animInListener = new Animator.AnimatorListener() {
-        @Override
-        public void onAnimationStart(Animator animator) {
-            mBinding.setFabPlayPause(false);
-            mBinding.setFabStop(false);
-        }
-        @SuppressLint("RestrictedApi")
-        @Override
-        public void onAnimationEnd(Animator animator) {
-            mBinding.setFabStopVisibility(false);
-            mBinding.setFabPlayPause(true);
-        }
-        @Override
-        public void onAnimationCancel(Animator animator) {
-
-        }
-        @Override
-        public void onAnimationRepeat(Animator animator) {
-
-        }
-    };
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_timer, container, false);
-        return mBinding.getRoot();
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        initViewModel();
-        setupFragment();
-        setupListeners();
-        initAnimations(mBinding.playPauseButton.getTranslationX());
-    }
-
-    private void initViewModel(){
-        FragmentActivity parent = getActivity();
-        if(parent != null){
-            PomodoroViewModelFactory factory = InjectorUtils.providePomodoroViewModelFactory();
-            pomodoroViewModel = ViewModelProviders.of(parent, factory).get(PomodoroViewModel.class);
-            mBinding.setLifecycleOwner(parent);
-            mBinding.setViewModel(pomodoroViewModel);
-        }
-    }
-
-    private void setupFragment(){
-        //set observers
-        //animations
-    }
-
-    private void setupListeners() {
-        mBinding.playPauseButton.setOnClickListener(view -> {
-            Intent startTimer = new Intent(getActivity(), TimerReceiver.class);
-            startTimer.setAction(PomodoroService.ACTION_START);
-
-            if(getActivity() != null){
-                getActivity().sendBroadcast(startTimer);
-            }
-        });
-        mBinding.stopButton.setOnClickListener(view -> {
-            Intent stopTime = new Intent(getActivity(), TimerReceiver.class);
-            stopTime.setAction(PomodoroService.ACTION_RESET);
-
-            if(getActivity() != null){
-                getActivity().sendBroadcast(stopTime);
-            }
-        });
-    }
-
-    private void initAnimations(float initialX){
+    private void initAnimations(float initialX) {
 
         //Move to started position
         ObjectAnimator slideOut = ObjectAnimator.ofFloat(mBinding.playPauseButton,"translationX",initialX-150f);
@@ -269,6 +88,126 @@ public class PomodoroFragment extends Fragment {
         animatorIn = new AnimatorSet();
         animatorIn.addListener(animInListener);
         animatorIn.playTogether(slideIn,stopButtonFadeOut,stopButtonMoveIn);
+    }
+
+    private Animator.AnimatorListener animOutListener = new Animator.AnimatorListener() {
+        @SuppressLint("RestrictedApi")
+        @Override
+        public void onAnimationStart(Animator animator) {
+            pomodoroViewModel.setStopButtonVisibility(true);
+            pomodoroViewModel.setStopButtonClickable(false);
+            pomodoroViewModel.setPlayPauseButtonClickable(false);
+            mBinding.playPauseButton.setImageResource(R.drawable.ic_pause_24dp);
+        }
+        @Override
+        public void onAnimationEnd(Animator animator) {
+            pomodoroViewModel.setPlayPauseButtonClickable(true);
+            pomodoroViewModel.setStopButtonClickable(true);
+        }
+        @Override
+        public void onAnimationCancel(Animator animator) {
+
+        }
+        @Override
+        public void onAnimationRepeat(Animator animator) {
+
+        }
+    };
+
+    private Animator.AnimatorListener animInListener = new Animator.AnimatorListener() {
+        @Override
+        public void onAnimationStart(Animator animator) {
+            pomodoroViewModel.setPlayPauseButtonClickable(false);
+            pomodoroViewModel.setStopButtonClickable(false);
+        }
+        @SuppressLint("RestrictedApi")
+        @Override
+        public void onAnimationEnd(Animator animator) {
+            pomodoroViewModel.setStopButtonVisibility(false);
+            pomodoroViewModel.setPlayPauseButtonClickable(true);
+        }
+        @Override
+        public void onAnimationCancel(Animator animator) {
+
+        }
+        @Override
+        public void onAnimationRepeat(Animator animator) {
+
+        }
+    };
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        mBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_timer, container, false);
+        return mBinding.getRoot();
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        initViewModel();
+        setupListeners();
+        initAnimations(mBinding.playPauseButton.getTranslationX());
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+
+        if(pomodoroViewModel.getTimerRunning()){
+            animatorOut.start();
+            pomodoroViewModel.setAnimationState(true);
+        }
+
+    }
+
+    private void initViewModel() {
+        FragmentActivity parent = getActivity();
+        if(parent != null){
+            PomodoroViewModelFactory factory = InjectorUtils.providePomodoroViewModelFactory();
+            pomodoroViewModel = ViewModelProviders.of(parent, factory).get(PomodoroViewModel.class);
+            mBinding.setLifecycleOwner(parent);
+            mBinding.setViewModel(pomodoroViewModel);
+        }
+    }
+
+    private void setupListeners() {
+        mBinding.playPauseButton.setOnClickListener(view -> {
+            if(pomodoroViewModel.getTimerRunning()){
+                Intent pauseTimer = new Intent(getActivity(), TimerReceiver.class);
+                pauseTimer.setAction(PomodoroService.ACTION_PAUSE);
+                mBinding.playPauseButton.setImageResource(R.drawable.ic_play_arrow_24dp);
+                if(getActivity() != null){
+                    getActivity().sendBroadcast(pauseTimer);
+                }
+                pomodoroViewModel.setTimerRunning(false);
+            } else {
+                Intent startTimer = new Intent(getActivity(), TimerReceiver.class);
+                startTimer.setAction(PomodoroService.ACTION_START);
+                mBinding.playPauseButton.setImageResource(R.drawable.ic_pause_24dp);
+                if(getActivity() != null){
+                    getActivity().sendBroadcast(startTimer);
+                }
+
+                if(!pomodoroViewModel.getAnimationState()){
+                    pomodoroViewModel.setAnimationState(true);
+                    animatorOut.start();
+                }
+                pomodoroViewModel.setTimerRunning(true);
+            }
+        });
+        mBinding.stopButton.setOnClickListener(view -> {
+            Intent stopTime = new Intent(getActivity(), TimerReceiver.class);
+            stopTime.setAction(PomodoroService.ACTION_RESET);
+            animatorIn.start();
+            pomodoroViewModel.setTimerRunning(false);
+            pomodoroViewModel.setAnimationState(false);
+
+            if(getActivity() != null){
+                getActivity().sendBroadcast(stopTime);
+            }
+        });
     }
 
 }

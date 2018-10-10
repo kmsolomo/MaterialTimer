@@ -22,25 +22,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
     <data>
+        <import type="android.view.View"/>
         <variable
             name="viewModel"
             type="com.kristoffersol.materialtimer.viewmodel.PomodoroViewModel"/>
-
-        <variable
-            name="fabPlayPause"
-            type="Boolean"/>
-
-        <variable
-            name="fabStop"
-            type="Boolean"/>
-
-        <variable
-            name="fabStopVisibility"
-            type="Boolean"/>
-
-        <variable
-            name="fabPlayPauseImage"
-            type="Boolean"/>
     </data>
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
@@ -67,7 +52,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:clickable="true"
+            android:clickable="@{viewModel.playPauseButtonClickable}"
             android:focusable="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -82,9 +67,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:clickable="@{fabStop, default = false}"
+            android:clickable="@{viewModel.stopButtonClickable}"
             android:focusable="true"
-            android:visibility="invisible"
+            android:visibility="@{viewModel.stopButtonVisibility ? View.VISIBLE : View.INVISIBLE}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

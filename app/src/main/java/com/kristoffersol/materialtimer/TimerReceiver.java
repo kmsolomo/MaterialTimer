@@ -29,7 +29,8 @@ public class TimerReceiver extends BroadcastReceiver {
 
     private void startService(Context context, Intent intent){
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            context.startForegroundService(intent);
+            //context.startForegroundService(intent);
+            context.startService(intent);
         } else {
             context.startService(intent);
         }

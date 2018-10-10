@@ -28,31 +28,13 @@ import com.kristoffersol.materialtimer.databinding.ActivityMainBinding;
 
 public class TimerActivity extends BaseActivity {
 
-    ActivityMainBinding mBinding;
-
-//    /**
-//     * Communicate with PomodoroService to launch notification
-//     */
-//
-//    private void startNotification(){
-//        if(timerStatus != TimerState.Stopped){
-//            Message notifyMsg = Message.obtain();
-//            notifyMsg.what = PomodoroService.START_NOTIFICATION;
-//            try{
-//                timerMessenger.send(notifyMsg);
-//            } catch (RemoteException e){
-//                Log.e("RemoteException",e.toString());
-//            }
-//        }
-//    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
 
-        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        ActivityMainBinding mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
-        setupToolbar();
+        setupToolbar(mBinding);
 
         PreferenceManager.setDefaultValues(this,R.xml.preferences,false);
 
@@ -63,26 +45,12 @@ public class TimerActivity extends BaseActivity {
         //insures service persists bound lifecycle
         Intent timerIntent = new Intent(TimerActivity.this, PomodoroService.class);
         startService(timerIntent);
-
     }
 
-    private void setupToolbar(){
-        mBinding.SettingsButton.setOnClickListener( view -> {
+    private void setupToolbar(ActivityMainBinding mainBinding){
+        mainBinding.SettingsButton.setOnClickListener( view -> {
             Intent data = new Intent(TimerActivity.this,SettingsActivity.class);
             startActivityForResult(data,THEME_REQUEST_CODE);
         });
-    }
-
-    @Override
-    public void onUserLeaveHint(){
-//        startNotification();
-    }
-
-
-    //possibly not needed if onUserLeaveHint is implemented
-    @Override
-    public void onBackPressed(){
-//        startNotification();
-        super.onBackPressed();
     }
 }

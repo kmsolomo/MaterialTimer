@@ -1,22 +1,256 @@
+/*
+ * Copyright 2018 Kristoffer Solomon
+ *
+ * This file is part of MaterialTimer.
+ *
+ * MaterialTimer is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MaterialTimer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MaterialTimer.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.kristoffersol.materialtimer.model;
+
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.CountDownTimer;
+import android.preference.PreferenceManager;
+import android.util.Log;
+
 
 public class PomodoroModel {
 
-    public enum PomodoroState{
-        STOPPED,
-        RUNNING,
-        PAUSED
+    private enum TimerState{
+        WORK,
+        BREAK,
+        LONG_BREAK
     }
 
-    private String currentTime;
-    private Boolean state;
+    private final String WORK_TIME          = "pref_work_time";
+    private final String BREAK_TIME         = "pref_break_time";
+    private final String LONG_BREAK_TIME    = "pref_long_break_time";
+    private final String LOOP_AMOUT_VALUE   = "pref_loop_amount";
+    private final long COUNT_DOWN_INTERVAL  = 300;
 
-    public PomodoroModel(String time, Boolean state){
-        currentTime = time;
-        this.state = state;
+    private MutableLiveData<String> currentTime;
+    private TimerState currentState;
+    private Boolean sessionStart, isRunning;
+
+    private long milliSecondsLeft,workTime,breakTime,longBreakTime;
+    private int sessionBeforeLongBreak,sessionCount;
+    private CountDownTimer timer;
+    private SharedPreferences sharedPref;
+
+    public PomodoroModel(Context context){
+        currentTime = new MutableLiveData<>();
+        currentState = TimerState.WORK;
+        sessionStart = false;
+        isRunning = false;
+        sessionCount = 0;
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+
     }
 
-    public String getTime(){
+    public LiveData<String> getTimer(){
         return currentTime;
+    }
+
+    private long convertTime(int value){
+        return Long.valueOf(value) * 60000;
+    }
+
+    private String formatTime(long milliSecondsLeft){
+        int minutes = (int) milliSecondsLeft / 60000;
+        int seconds = (int) milliSecondsLeft % 60000 / 1000;
+        String currentTime = "";
+
+        if (minutes < 10) {
+            currentTime = "0" + minutes;
+        } else {
+            currentTime += minutes;
+        }
+
+        currentTime += ":";
+
+        if (seconds < 10) {
+            currentTime += "0" + seconds;
+        } else {
+            currentTime += seconds;
+        }
+        return currentTime;
+    }
+
+    public void refreshTimers(){
+        workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
+        breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
+        longBreakTime = convertTime(sharedPref.getInt(LONG_BREAK_TIME,15));
+        sessionBeforeLongBreak = sharedPref.getInt(LOOP_AMOUT_VALUE,4);
+        updateTimer(workTime);
+    }
+
+    public void startTimer(){
+        if(currentState == TimerState.WORK && !sessionStart && !isRunning){
+            sessionStart = true;
+            isRunning = true;
+            timer(convertTime(sharedPref.getInt(WORK_TIME,25)));
+            Log.i("PomodoroModel","INSIDE STARTTIMER() if");
+        } else if(!isRunning){
+            isRunning = true;
+            timer(milliSecondsLeft);
+            Log.i("PomodoroModel","INSIDE STARTTIMER() else if");
+        }
+    }
+
+    public void pauseTimer(){
+        if(isRunning){
+            isRunning = false;
+            saveTimerState();
+            timer.cancel();
+            Log.i("PomodoroModel","INSIDE PAUSETIMER()");
+        }
+    }
+
+    public void restartTimer(){
+        restoreTimerState();
+        if(isRunning){
+            isRunning = false;
+            startTimer();
+        }
+    }
+
+    /**
+     * Reset timer to starting state
+     */
+
+    public void resetTimer(){
+        pauseTimer();
+        currentState = TimerState.WORK;
+        sessionStart = false;
+        refreshTimers();
+    }
+
+//    private String getCurrentTimer(){
+//        if(currentTimer == PomodoroService.Timer.Work){
+//            return "Work";
+//        } else if (currentTimer == PomodoroService.Timer.Break){
+//            return "Break";
+//        } else {
+//            return "Long Break";
+//        }
+//    }
+
+
+    /**
+     * Initialize new CountDownTimer that will loop through all timers
+     * @param  timeLeft time to start countdown
+     */
+
+    private void timer(long timeLeft){
+        timer = new CountDownTimer(timeLeft,COUNT_DOWN_INTERVAL) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                milliSecondsLeft = millisUntilFinished;
+                updateTimer(milliSecondsLeft);
+            }
+
+            @Override
+            public void onFinish() {
+//                vibrate();
+                switch (currentState){
+                    case WORK:
+                        if(sessionCount < sessionBeforeLongBreak){
+                            sessionCount++;
+                            currentState = TimerState.BREAK;
+                            refreshTimers();
+                            timer(breakTime);
+                        } else {
+                            sessionCount = 0;
+                            currentState = TimerState.LONG_BREAK;
+                            timer(longBreakTime);
+                        }
+                        break;
+                    case BREAK:
+                        currentState = TimerState.WORK;
+                        refreshTimers();
+                        timer(workTime);
+                        break;
+                    case LONG_BREAK:
+                        currentState = TimerState.WORK;
+                        refreshTimers();
+                        timer(workTime);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }.start();
+    }
+
+    private void updateTimer(long milliSecondsLeft){
+        currentTime.setValue(formatTime(milliSecondsLeft));
+    }
+
+    private void restoreTimerState(){
+        sessionStart = sharedPref.getBoolean("sessionStart",false);
+//        customFlag = sharedPref.getBoolean("customFlag",false);
+//        connected = sharedPref.getBoolean("connected",false);
+//        notification = sharedPref.getBoolean("notification",true);
+        isRunning = sharedPref.getBoolean("running",false);
+        sessionCount = sharedPref.getInt("sessionCount",0);
+        sessionBeforeLongBreak = sharedPref.getInt("sessionBeforeLongBreak",4);
+        milliSecondsLeft = sharedPref.getLong("timeLeft",0);
+
+        int timerState = sharedPref.getInt("currentTimer",0);
+
+        if(timerState == 0){
+            currentState = TimerState.WORK;
+        } else if(timerState == 1){
+            currentState = TimerState.BREAK;
+        } else{
+            currentState = TimerState.LONG_BREAK;
+        }
+
+//        if(running){
+//            startForeground(NotificationUtil.NOTIFICATION_ID,
+//                    notifUtil.buildNotification(formatTime(milliSecondsLeft),
+//                            true,getTimer()));
+//            notifUtil.updateNotification(formatTime(milliSecondsLeft),getTimer());
+//        } else {
+//            startForeground(NotificationUtil.NOTIFICATION_ID,
+//                    notifUtil.buildNotification(formatTime(milliSecondsLeft),
+//                            false,getTimer()));
+//            notifUtil.updateNotification(formatTime(milliSecondsLeft),getTimer());
+//        }
+    }
+
+    private void saveTimerState(){
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean("sessionStart",sessionStart);
+//        editor.putBoolean("customFlag",customFlag);
+//        editor.putBoolean("connected",connected);
+//        editor.putBoolean("notification",notification);
+        editor.putBoolean("running",isRunning);
+        editor.putInt("sessionCount",sessionCount);
+        editor.putInt("sessionBeforeLongBreak",sessionBeforeLongBreak);
+        editor.putLong("timeLeft",milliSecondsLeft);
+
+        if(currentState == TimerState.WORK){
+            editor.putInt("currentTimer",0);
+        } else if(currentState == TimerState.BREAK){
+            editor.putInt("currentTimer",1);
+        } else {
+            editor.putInt("currentTimer",2);
+        }
+        editor.apply();
     }
 }
