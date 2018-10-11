@@ -23,6 +23,7 @@ import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
@@ -58,8 +59,6 @@ public class PomodoroFragment extends Fragment {
     private PomodoroViewModel pomodoroViewModel;
     private AnimatorSet animatorOut,animatorIn;
     private PomodoroListener pomodoroListener;
-
-    private boolean state;
 
     private void initAnimations(float initialX) {
 
@@ -156,9 +155,9 @@ public class PomodoroFragment extends Fragment {
     };
 
     public interface PomodoroListener{
-        public void connectService(Intent intent, ServiceConnection serviceConnection);
-        public void disconnectService(ServiceConnection connection);
-        public void publishAction(Intent intent);
+        void connectService(ServiceConnection serviceConnection);
+        void disconnectService(ServiceConnection connection);
+        void publishAction(String action);
     }
 
     @Nullable
@@ -177,24 +176,23 @@ public class PomodoroFragment extends Fragment {
     }
 
     @Override
-    public void onResume(){
-        super.onResume();
-
-        if(state){
-            animatorOut.start();
-            pomodoroViewModel.setAnimationState(true);
-            mBinding.playPauseButton.setImageResource(R.drawable.ic_pause_24dp);
-        } else {
-            mBinding.playPauseButton.setImageResource(R.drawable.ic_play_arrow_24dp);
-        }
-
+    public void onStart(){
+        super.onStart();
+        pomodoroListener.connectService(pomConnection);
     }
 
     @Override
-    public void onStart(){
-        super.onStart();
-        Intent pomIntent = new Intent(getActivity(), PomodoroService.class);
-        pomodoroListener.connectService(pomIntent,pomConnection);
+    public void onResume(){
+        super.onResume();
+
+        if(pomodoroViewModel.getAnimationState()){
+            animatorOut.start();
+            if(pomodoroViewModel.getTimerRunning()){
+                mBinding.playPauseButton.setImageResource(R.drawable.ic_pause_24dp);
+            } else {
+                mBinding.playPauseButton.setImageResource(R.drawable.ic_play_arrow_24dp);
+            }
+        }
     }
 
     @Override
@@ -220,24 +218,16 @@ public class PomodoroFragment extends Fragment {
     }
 
     private void setupListeners() {
-        pomodoroViewModel.getStateData().observe(this, bool -> {
-            if(bool != null){
-                state = bool;
-            }
-            Log.i("FRAGMENT OBSERVER","STATE CHANGED");
-        });
+        pomodoroViewModel.getStateData().observe(this, state -> {});
+
         mBinding.playPauseButton.setOnClickListener(view -> {
             if(pomodoroViewModel.getTimerRunning()){
-                Intent pauseTimer = new Intent(getActivity(), TimerReceiver.class);
-                pauseTimer.setAction(PomodoroService.ACTION_PAUSE);
+                pomodoroListener.publishAction(PomodoroService.ACTION_PAUSE);
                 mBinding.playPauseButton.setImageResource(R.drawable.ic_play_arrow_24dp);
-                pomodoroListener.publishAction(pauseTimer);
 
             } else {
-                Intent startTimer = new Intent(getActivity(), TimerReceiver.class);
-                startTimer.setAction(PomodoroService.ACTION_START);
+                pomodoroListener.publishAction(PomodoroService.ACTION_START);
                 mBinding.playPauseButton.setImageResource(R.drawable.ic_pause_24dp);
-                pomodoroListener.publishAction(startTimer);
 
                 if(!pomodoroViewModel.getAnimationState()){
                     pomodoroViewModel.setAnimationState(true);
@@ -245,13 +235,11 @@ public class PomodoroFragment extends Fragment {
                 }
             }
         });
-        mBinding.stopButton.setOnClickListener(view -> {
-            Intent stopTime = new Intent(getActivity(), TimerReceiver.class);
-            stopTime.setAction(PomodoroService.ACTION_RESET);
-            pomodoroListener.publishAction(stopTime);
-            animatorIn.start();
-            pomodoroViewModel.setAnimationState(false);
 
+        mBinding.stopButton.setOnClickListener(view -> {
+            pomodoroListener.publishAction(PomodoroService.ACTION_RESET);
+            pomodoroViewModel.setAnimationState(false);
+            animatorIn.start();
         });
     }
 }

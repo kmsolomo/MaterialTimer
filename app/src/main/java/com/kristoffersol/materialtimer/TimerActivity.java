@@ -30,8 +30,8 @@ import com.kristoffersol.materialtimer.databinding.ActivityMainBinding;
 public class TimerActivity extends BaseActivity implements PomodoroFragment.PomodoroListener {
 
     @Override
-    public void connectService(Intent intent, ServiceConnection serviceConnection){
-        bindService(intent,serviceConnection,BIND_AUTO_CREATE);
+    public void connectService(ServiceConnection serviceConnection){
+        bindService(new Intent(this, PomodoroService.class),serviceConnection,BIND_AUTO_CREATE);
     }
 
     @Override
@@ -40,7 +40,9 @@ public class TimerActivity extends BaseActivity implements PomodoroFragment.Pomo
     }
 
     @Override
-    public void publishAction(Intent intent){
+    public void publishAction(String action){
+        Intent intent = new Intent(this, TimerReceiver.class);
+        intent.setAction(action);
         sendBroadcast(intent);
     }
 
