@@ -25,8 +25,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
+import java.util.Timer;
 
 public class PomodoroModel {
 
@@ -40,11 +40,11 @@ public class PomodoroModel {
     private final String BREAK_TIME         = "pref_break_time";
     private final String LONG_BREAK_TIME    = "pref_long_break_time";
     private final String LOOP_AMOUT_VALUE   = "pref_loop_amount";
-    private final long COUNT_DOWN_INTERVAL  = 300;
 
     private MutableLiveData<String> currentTime;
+    private MutableLiveData<Boolean> isRunning;
     private TimerState currentState;
-    private Boolean sessionStart, isRunning;
+    private Boolean sessionStart;
 
     private long milliSecondsLeft,workTime,breakTime,longBreakTime;
     private int sessionBeforeLongBreak,sessionCount;
@@ -53,16 +53,28 @@ public class PomodoroModel {
 
     public PomodoroModel(Context context){
         currentTime = new MutableLiveData<>();
+        isRunning = new MutableLiveData<>();
+        isRunning.setValue(false);
         currentState = TimerState.WORK;
         sessionStart = false;
-        isRunning = false;
         sessionCount = 0;
         sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-
     }
 
     public LiveData<String> getTimer(){
         return currentTime;
+    }
+
+    public String getTime(){
+        return currentTime.getValue();
+    }
+
+    public LiveData<Boolean> getState(){
+        return isRunning;
+    }
+
+    public Boolean isRunning(){
+        return isRunning.getValue();
     }
 
     private long convertTime(int value){
@@ -99,31 +111,25 @@ public class PomodoroModel {
     }
 
     public void startTimer(){
-        if(currentState == TimerState.WORK && !sessionStart && !isRunning){
+        if(currentState == TimerState.WORK && !sessionStart){
             sessionStart = true;
-            isRunning = true;
+            isRunning.setValue(true);
             timer(convertTime(sharedPref.getInt(WORK_TIME,25)));
-            Log.i("PomodoroModel","INSIDE STARTTIMER() if");
-        } else if(!isRunning){
-            isRunning = true;
+        } else {
+            isRunning.setValue(true);
             timer(milliSecondsLeft);
-            Log.i("PomodoroModel","INSIDE STARTTIMER() else if");
         }
     }
 
     public void pauseTimer(){
-        if(isRunning){
-            isRunning = false;
-            saveTimerState();
-            timer.cancel();
-            Log.i("PomodoroModel","INSIDE PAUSETIMER()");
-        }
+        timer.cancel();
+        isRunning.setValue(false);
     }
 
     public void restartTimer(){
         restoreTimerState();
-        if(isRunning){
-            isRunning = false;
+        if(isRunning()){
+            isRunning.setValue(false);
             startTimer();
         }
     }
@@ -139,16 +145,15 @@ public class PomodoroModel {
         refreshTimers();
     }
 
-//    private String getCurrentTimer(){
-//        if(currentTimer == PomodoroService.Timer.Work){
-//            return "Work";
-//        } else if (currentTimer == PomodoroService.Timer.Break){
-//            return "Break";
-//        } else {
-//            return "Long Break";
-//        }
-//    }
-
+    public String getCurrentTimer(){
+        if(currentState == TimerState.WORK){
+            return "Work";
+        } else if (currentState == TimerState.BREAK){
+            return "Break";
+        } else {
+            return "Long Break";
+        }
+    }
 
     /**
      * Initialize new CountDownTimer that will loop through all timers
@@ -156,7 +161,7 @@ public class PomodoroModel {
      */
 
     private void timer(long timeLeft){
-        timer = new CountDownTimer(timeLeft,COUNT_DOWN_INTERVAL) {
+        timer = new CountDownTimer(timeLeft,300) {
             @Override
             public void onTick(long millisUntilFinished) {
                 milliSecondsLeft = millisUntilFinished;
@@ -205,7 +210,7 @@ public class PomodoroModel {
 //        customFlag = sharedPref.getBoolean("customFlag",false);
 //        connected = sharedPref.getBoolean("connected",false);
 //        notification = sharedPref.getBoolean("notification",true);
-        isRunning = sharedPref.getBoolean("running",false);
+//        isRunning = sharedPref.getBoolean("running",false);
         sessionCount = sharedPref.getInt("sessionCount",0);
         sessionBeforeLongBreak = sharedPref.getInt("sessionBeforeLongBreak",4);
         milliSecondsLeft = sharedPref.getLong("timeLeft",0);
@@ -239,7 +244,7 @@ public class PomodoroModel {
 //        editor.putBoolean("customFlag",customFlag);
 //        editor.putBoolean("connected",connected);
 //        editor.putBoolean("notification",notification);
-        editor.putBoolean("running",isRunning);
+//        editor.putBoolean("running",isRunning);
         editor.putInt("sessionCount",sessionCount);
         editor.putInt("sessionBeforeLongBreak",sessionBeforeLongBreak);
         editor.putLong("timeLeft",milliSecondsLeft);

@@ -19,6 +19,7 @@
 
 package com.kristoffersol.materialtimer;
 
+import android.app.Notification;
 import android.arch.lifecycle.LifecycleService;
 import android.content.Intent;
 import android.os.Build;
@@ -64,13 +65,8 @@ public class PomodoroService extends LifecycleService{
         pomodoroRepository = InjectorUtils.providePomodoroRepository();
 
         pomodoroModel.getTimer().observe(this, this::routeUpdate);
+        pomodoroModel.getState().observe(this, this::updateState);
         pomodoroModel.refreshTimers();
-
-        Log.i("onCreate()","POMODORO SERVICE ONCREATE");
-    }
-
-    private void routeUpdate(String time){
-        pomodoroRepository.setTime(time);
     }
 
     @Override
@@ -83,20 +79,21 @@ public class PomodoroService extends LifecycleService{
                 switch(intent.getAction()){
                     case ACTION_START:
                         pomodoroModel.startTimer();
-                        Log.i("onStartCommand","ACTION_START SERVICE");
+                        handleNotification();
                         break;
                     case ACTION_PAUSE:
                         pomodoroModel.pauseTimer();
-                        Log.i("onStartCommand","ACTION_PAUSE SERVICE");
+                        handleNotification();
                         break;
                     case ACTION_RESET:
                         pomodoroModel.resetTimer();
                         break;
                     case ACTION_STOP:
+                        stopNotification();
                         stopSelf();
                         break;
                     case SCREEN_OFF:
-//                        screenOff();
+                        screenOff();
                         break;
                 }
             }
@@ -113,6 +110,7 @@ public class PomodoroService extends LifecycleService{
     @Override
     public boolean onUnbind(Intent intent){
         connected = false;
+        startNotification();
         return true;
     }
 
@@ -120,40 +118,51 @@ public class PomodoroService extends LifecycleService{
     public void onRebind(Intent intent){
         super.onRebind(intent);
         connected = true;
+        stopNotification();
     }
 
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
+    private void routeUpdate(String time){
+        if(notification){
+            notifUtil.updateNotification(time,pomodoroModel.getCurrentTimer());
+        }
+        pomodoroRepository.setTime(time);
     }
 
-//    private void startNotification(){
-//        if(running){
-//            startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(milliSecondsLeft),true,getTimer()));
-//        } else {
-//            startForeground(NotificationUtil.NOTIFICATION_ID, notifUtil.buildNotification(formatTime(milliSecondsLeft),false,getTimer()));
-//        }
-//        notifUtil.updateNotification(formatTime(milliSecondsLeft),getTimer());
-//        notification = true;
-//    }
-//
-//    private void stopNotification(){
-//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-//            stopForeground(STOP_FOREGROUND_REMOVE);
-//        } else {
-//            stopForeground(true);
-//        }
-//    }
-//
-//    /**
-//     * Start notification when sessions has started and user turns screen off
-//     */
-//    private void screenOff(){
-//        if(!connected && sessionStart && !notification){
-//            startNotification();
-//        }
-//    }
-//
+    private void updateState(Boolean state){
+        pomodoroRepository.setState(state);
+        Log.i("updateState","repository SAVE STATE");
+    }
+
+    private void handleNotification(){
+        if(notification){
+            startNotification();
+        }
+    }
+
+    private void startNotification(){
+        Notification pomNotification = notifUtil.buildNotification(pomodoroModel.getTime(), pomodoroModel.isRunning(), pomodoroModel.getCurrentTimer());
+        startForeground(NotificationUtil.NOTIFICATION_ID, pomNotification);
+        notification = true;
+    }
+
+    private void stopNotification(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+            stopForeground(STOP_FOREGROUND_REMOVE);
+        } else {
+            stopForeground(true);
+        }
+        notification = false;
+    }
+
+    /**
+     * Start notification when sessions has started and user turns screen off
+     */
+    private void screenOff(){
+        if(!connected && !notification){
+            startNotification();
+        }
+    }
+
 //    private void vibrate(){
 //        boolean vibratePref = sharedPref.getBoolean(VIBRATION,false);
 //        if(vibratePref){

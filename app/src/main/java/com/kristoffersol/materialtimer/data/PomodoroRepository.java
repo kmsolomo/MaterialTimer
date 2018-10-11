@@ -1,6 +1,5 @@
 package com.kristoffersol.materialtimer.data;
 
-
 import android.arch.lifecycle.MutableLiveData;
 
 public class PomodoroRepository {
@@ -32,6 +31,8 @@ public class PomodoroRepository {
     public void setTime(String time){
         pomodoroDao.setTime(time);
     }
+
+    public MutableLiveData<Boolean> getStateData() { return pomodoroDao.getCurrState(); }
 
     public Boolean getState(){
         return pomodoroDao.getState();

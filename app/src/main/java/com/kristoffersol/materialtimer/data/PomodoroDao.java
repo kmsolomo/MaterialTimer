@@ -14,13 +14,6 @@ public class PomodoroDao {
     }
 
     public MutableLiveData<String> getTimeData() {
-        if(currTime == null){
-            synchronized (this){
-                if(currTime == null){
-                    currTime = new MutableLiveData<>();
-                }
-            }
-        }
         return currTime;
     }
 
@@ -30,6 +23,10 @@ public class PomodoroDao {
 
     public String getTime(){
         return currTime.getValue();
+    }
+
+    public MutableLiveData<Boolean> getCurrState() {
+        return currState;
     }
 
     public void setState(Boolean state){

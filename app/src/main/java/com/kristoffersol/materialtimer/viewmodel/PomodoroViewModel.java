@@ -23,22 +23,24 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
 import android.arch.lifecycle.ViewModel;
+import android.util.Log;
 
 import com.kristoffersol.materialtimer.data.PomodoroRepository;
 
 public class PomodoroViewModel extends ViewModel {
 
     private LiveData<String> currentTime;
-    private LiveData<String> timerModel;
+    private LiveData<Boolean> timerRunning;
     private MutableLiveData<Boolean> stopButtonClickable,playPauseButtonClickable,stopButtonVisibility;
-    private boolean animationState,timerRunning;
-    private PomodoroRepository pomodoroRepository;
+    private boolean animationState;
 
 
     public PomodoroViewModel(PomodoroRepository pomodoroRepository){
-        this.pomodoroRepository = pomodoroRepository;
-        timerModel = this.pomodoroRepository.getTimeData();
-        currentTime = Transformations.map(timerModel, time -> time);
+        currentTime = Transformations.map(pomodoroRepository.getTimeData(), time -> time);
+        timerRunning = Transformations.map(pomodoroRepository.getStateData(), state -> {
+            Log.i("TransformationsMap","UPDATE VIEWMODEL TIMERSTATE");
+            return state;
+        });
         stopButtonVisibility = new MutableLiveData<>();
         playPauseButtonClickable = new MutableLiveData<>();
         stopButtonClickable = new MutableLiveData<>();
@@ -50,7 +52,6 @@ public class PomodoroViewModel extends ViewModel {
         stopButtonVisibility.setValue(false);
         stopButtonClickable.setValue(false);
         animationState = false;
-        timerRunning = false;
     }
 
     public boolean getAnimationState(){
@@ -61,12 +62,15 @@ public class PomodoroViewModel extends ViewModel {
         animationState = state;
     }
 
-    public boolean getTimerRunning(){
-        return timerRunning;
+    public Boolean getTimerRunning() {
+        if(timerRunning.getValue() != null){
+            return timerRunning.getValue();
+        }
+        return false;
     }
 
-    public void setTimerRunning(boolean state){
-        timerRunning = state;
+    public LiveData<Boolean> getStateData(){
+        return timerRunning;
     }
 
     public LiveData<Boolean> getPlayPauseButtonClickable(){

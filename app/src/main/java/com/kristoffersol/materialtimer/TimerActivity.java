@@ -20,13 +20,29 @@
 package com.kristoffersol.materialtimer;
 
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.databinding.DataBindingUtil;
 import android.preference.PreferenceManager;
 import android.os.Bundle;
 
 import com.kristoffersol.materialtimer.databinding.ActivityMainBinding;
 
-public class TimerActivity extends BaseActivity {
+public class TimerActivity extends BaseActivity implements PomodoroFragment.PomodoroListener {
+
+    @Override
+    public void connectService(Intent intent, ServiceConnection serviceConnection){
+        bindService(intent,serviceConnection,BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void disconnectService(ServiceConnection serviceConnection){
+        unbindService(serviceConnection);
+    }
+
+    @Override
+    public void publishAction(Intent intent){
+        sendBroadcast(intent);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState){

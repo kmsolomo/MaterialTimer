@@ -23,7 +23,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.util.Log;
 
 public class TimerReceiver extends BroadcastReceiver {
 
@@ -58,6 +57,11 @@ public class TimerReceiver extends BroadcastReceiver {
                     Intent resetIntent = new Intent(context, PomodoroService.class);
                     resetIntent.setAction(PomodoroService.ACTION_RESET);
                     startService(context,resetIntent);
+                    break;
+                case PomodoroService.ACTION_STOP:
+                    Intent stopIntent = new Intent(context, PomodoroService.class);
+                    stopIntent.setAction(PomodoroService.ACTION_STOP);
+                    startService(context,stopIntent);
                     break;
             }
         }

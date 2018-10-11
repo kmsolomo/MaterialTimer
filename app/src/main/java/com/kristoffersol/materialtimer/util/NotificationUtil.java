@@ -54,7 +54,7 @@ public class NotificationUtil {
 
     public NotificationUtil(Context context){
         mainContext = context;
-        notificationManager = (NotificationManager) mainContext.getSystemService(mainContext.NOTIFICATION_SERVICE);
+        notificationManager = (NotificationManager) mainContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
         //START TIMER
         Intent startIntent = new Intent(mainContext, TimerReceiver.class);
@@ -68,7 +68,7 @@ public class NotificationUtil {
 
         //STOP TIMER
         Intent stopIntent = new Intent(mainContext, TimerReceiver.class);
-        stopIntent.setAction(PomodoroService.ACTION_RESET);
+        stopIntent.setAction(PomodoroService.ACTION_STOP);
         PendingIntent stopPendingIntent = PendingIntent.getBroadcast(mainContext,0,stopIntent,PendingIntent.FLAG_UPDATE_CURRENT);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
@@ -101,30 +101,22 @@ public class NotificationUtil {
 
         builder = new Notification.Builder(mainContext);
 
+        builder.setSmallIcon(R.drawable.ic_alarm_24dp)
+                .setAutoCancel(true)
+                .setContentIntent(timerPendingIntent)
+                .setContentTitle(timer)
+                .setContentText(currentTime)
+                .setOnlyAlertOnce(true)
+                .setCategory(Notification.CATEGORY_ALARM);
+
         //Change available action options depending on state
         if(timerRunning){
-            builder.setSmallIcon(R.drawable.ic_alarm_24dp)
-                    .setAutoCancel(true)
-                    .setContentIntent(timerPendingIntent)
-                    .setContentTitle(timer)
-                    .setContentText(currentTime)
-                    .setOnlyAlertOnce(true)
-                    .setOngoing(true)
-                    .addAction(pauseAction)
-                    .addAction(stopAction)
-                    .setCategory(Notification.CATEGORY_ALARM);
+            builder.addAction(pauseAction);
         } else {
-            builder.setSmallIcon(R.drawable.ic_alarm_24dp)
-                    .setAutoCancel(true)
-                    .setContentIntent(timerPendingIntent)
-                    .setContentTitle(timer)
-                    .setContentText(currentTime)
-                    .setOnlyAlertOnce(true)
-                    .setOngoing(true)
-                    .addAction(startAction)
-                    .addAction(stopAction)
-                    .setCategory(Notification.CATEGORY_ALARM);
+            builder.addAction(startAction);
         }
+
+        builder.addAction(stopAction);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
@@ -146,6 +138,7 @@ public class NotificationUtil {
         builder.setContentTitle(timer);
         builder.setContentText(time);
         notificationManager.notify(NOTIFICATION_ID, builder.build());
-
     }
+
+
 }
