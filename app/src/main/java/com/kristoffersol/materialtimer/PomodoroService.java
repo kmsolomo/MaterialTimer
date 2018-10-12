@@ -24,9 +24,6 @@ import androidx.lifecycle.LifecycleService;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
-import android.util.Log;
 
 import com.kristoffersol.materialtimer.data.PomodoroRepository;
 import com.kristoffersol.materialtimer.model.PomodoroModel;
@@ -42,7 +39,6 @@ public class PomodoroService extends LifecycleService{
     public static final String ACTION_RESET  = "RESET";
 
     private NotificationUtil notifUtil;
-    private Vibrator vibrator;
 
     private PomodoroRepository pomodoroRepository;
     private PomodoroModel pomodoroModel;
@@ -53,12 +49,6 @@ public class PomodoroService extends LifecycleService{
         super.onCreate();
         connected = false;
         notification = false;
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            vibrator = getSystemService(Vibrator.class);
-        } else {
-            vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        }
 
         notifUtil = new NotificationUtil(this);
         pomodoroModel = new PomodoroModel(this);
@@ -75,6 +65,10 @@ public class PomodoroService extends LifecycleService{
         super.onStartCommand(intent, flags, startId);
         if(intent == null){
             pomodoroModel.restartTimer();
+            if(pomodoroModel.isRunning()){
+                startNotification();
+            }
+
         } else {
             if(intent.getAction() != null){
                 switch(intent.getAction()){
@@ -168,16 +162,5 @@ public class PomodoroService extends LifecycleService{
             startNotification();
         }
     }
-
-//    private void vibrate(){
-//        boolean vibratePref = sharedPref.getBoolean(VIBRATION,false);
-//        if(vibratePref){
-//            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-//                vibrator.vibrate(VibrationEffect.createOneShot(1000,VibrationEffect.DEFAULT_AMPLITUDE));
-//            } else {
-//                vibrator.vibrate(1000);
-//            }
-//        }
-//    }
 
 }

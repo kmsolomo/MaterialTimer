@@ -21,13 +21,19 @@ package com.kristoffersol.materialtimer.model;
 
 
 import android.content.Context;
+import android.os.Build;
 import android.os.CountDownTimer;
 import android.content.SharedPreferences;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.preference.PreferenceManager;
 
 import com.kristoffersol.materialtimer.R;
+
+import static android.content.Context.VIBRATOR_SERVICE;
 
 public class PomodoroModel {
 
@@ -41,11 +47,13 @@ public class PomodoroModel {
     private String BREAK_TIME;
     private String LONG_BREAK_TIME;
     private String LOOP_AMOUNT_VALUE;
+    private String VIBRATE;
 
     private MutableLiveData<String> currentTime;
     private MutableLiveData<Boolean> isRunning;
     private MutableLiveData<Boolean> sessionStart;
     private TimerState currentState;
+    private Vibrator vibrator;
 
     private long milliSecondsLeft,workTime,breakTime,longBreakTime;
     private int sessionBeforeLongBreak,sessionCount;
@@ -62,10 +70,18 @@ public class PomodoroModel {
         sessionCount = 0;
         sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            vibrator = context.getSystemService(Vibrator.class);
+        } else {
+            vibrator = (Vibrator) context.getSystemService(VIBRATOR_SERVICE);
+        }
+
         WORK_TIME = context.getResources().getString(R.string.WORK_KEY);
         BREAK_TIME = context.getResources().getString(R.string.BREAK_KEY);
         LONG_BREAK_TIME = context.getResources().getString(R.string.LONG_BREAK_KEY);
         LOOP_AMOUNT_VALUE = context.getResources().getString(R.string.LOOP_KEY);
+        VIBRATE = context.getResources().getString(R.string.VIBRATE_KEY);
 
 
     }
@@ -179,11 +195,12 @@ public class PomodoroModel {
             public void onTick(long millisUntilFinished) {
                 milliSecondsLeft = millisUntilFinished;
                 updateTimer(milliSecondsLeft);
+                saveTimerState();
             }
 
             @Override
             public void onFinish() {
-//                vibrate();
+                vibrate();
                 switch (currentState){
                     case WORK:
                         if(sessionCount < sessionBeforeLongBreak){
@@ -219,11 +236,8 @@ public class PomodoroModel {
     }
 
     private void restoreTimerState(){
-//        sessionStart = sharedPref.getBoolean("sessionStart",false);
-//        customFlag = sharedPref.getBoolean("customFlag",false);
-//        connected = sharedPref.getBoolean("connected",false);
-//        notification = sharedPref.getBoolean("notification",true);
-//        isRunning = sharedPref.getBoolean("running",false);
+        sessionStart.setValue(sharedPref.getBoolean("sessionStart",false));
+        isRunning.setValue(sharedPref.getBoolean("running",false));
         sessionCount = sharedPref.getInt("sessionCount",0);
         sessionBeforeLongBreak = sharedPref.getInt("sessionBeforeLongBreak",4);
         milliSecondsLeft = sharedPref.getLong("timeLeft",0);
@@ -237,27 +251,12 @@ public class PomodoroModel {
         } else{
             currentState = TimerState.LONG_BREAK;
         }
-
-//        if(running){
-//            startForeground(NotificationUtil.NOTIFICATION_ID,
-//                    notifUtil.buildNotification(formatTime(milliSecondsLeft),
-//                            true,getTimer()));
-//            notifUtil.updateNotification(formatTime(milliSecondsLeft),getTimer());
-//        } else {
-//            startForeground(NotificationUtil.NOTIFICATION_ID,
-//                    notifUtil.buildNotification(formatTime(milliSecondsLeft),
-//                            false,getTimer()));
-//            notifUtil.updateNotification(formatTime(milliSecondsLeft),getTimer());
-//        }
     }
 
     private void saveTimerState(){
         SharedPreferences.Editor editor = sharedPref.edit();
-//        editor.putBoolean("sessionStart",sessionStart);
-//        editor.putBoolean("customFlag",customFlag);
-//        editor.putBoolean("connected",connected);
-//        editor.putBoolean("notification",notification);
-//        editor.putBoolean("running",isRunning);
+        editor.putBoolean("sessionStart",sessionStart.getValue());
+        editor.putBoolean("running",isRunning.getValue());
         editor.putInt("sessionCount",sessionCount);
         editor.putInt("sessionBeforeLongBreak",sessionBeforeLongBreak);
         editor.putLong("timeLeft",milliSecondsLeft);
@@ -270,5 +269,16 @@ public class PomodoroModel {
             editor.putInt("currentTimer",2);
         }
         editor.apply();
+    }
+
+    private void vibrate(){
+        boolean vibratePref = sharedPref.getBoolean(VIBRATE,false);
+        if(vibratePref){
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+                vibrator.vibrate(VibrationEffect.createOneShot(1000,VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                vibrator.vibrate(1000);
+            }
+        }
     }
 }
