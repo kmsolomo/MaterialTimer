@@ -39,7 +39,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProviders;
 
-
 import com.kristoffersol.materialtimer.databinding.FragmentTimerBinding;
 import com.kristoffersol.materialtimer.util.InjectorUtils;
 import com.kristoffersol.materialtimer.viewmodel.PomodoroViewModel;
@@ -221,7 +220,7 @@ public class PomodoroFragment extends Fragment {
 
     private void setupListeners() {
         pomodoroViewModel.getStateData().observe(this, state -> {});
-
+        pomodoroViewModel.getSessionData().observe(this, state -> {});
         mBinding.playPauseButton.setOnClickListener(view -> {
             if(pomodoroViewModel.getTimerRunning()){
                 pomodoroListener.publishAction(PomodoroService.ACTION_PAUSE);

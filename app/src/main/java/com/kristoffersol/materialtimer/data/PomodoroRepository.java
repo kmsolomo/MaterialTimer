@@ -60,4 +60,16 @@ public class PomodoroRepository {
     public void setState(Boolean state){
         pomodoroDao.setState(state);
     }
+
+    public MutableLiveData<Boolean> getSessionStartedData(){
+        return pomodoroDao.getSessionStartedData();
+    }
+
+    public void setSessionStartedData(Boolean state){
+        pomodoroDao.setSessionStarted(state);
+    }
+
+    public Boolean getSessionStarted(){
+        return pomodoroDao.getSessionStarted();
+    }
 }

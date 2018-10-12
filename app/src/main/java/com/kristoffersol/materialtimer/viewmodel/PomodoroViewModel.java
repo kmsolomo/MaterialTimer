@@ -30,6 +30,7 @@ public class PomodoroViewModel extends ViewModel {
 
     private LiveData<String> currentTime;
     private LiveData<Boolean> timerRunning;
+    private LiveData<Boolean> sessionStarted;
     private MutableLiveData<Boolean> stopButtonClickable,playPauseButtonClickable,stopButtonVisibility;
     private boolean animationState;
 
@@ -37,6 +38,10 @@ public class PomodoroViewModel extends ViewModel {
     public PomodoroViewModel(PomodoroRepository pomodoroRepository){
         currentTime = Transformations.map(pomodoroRepository.getTimeData(), time -> time);
         timerRunning = Transformations.map(pomodoroRepository.getStateData(), state -> state);
+        sessionStarted = Transformations.map(pomodoroRepository.getSessionStartedData(), state -> {
+            animationState = state;
+            return state;
+        });
         stopButtonVisibility = new MutableLiveData<>();
         playPauseButtonClickable = new MutableLiveData<>();
         stopButtonClickable = new MutableLiveData<>();
@@ -63,6 +68,10 @@ public class PomodoroViewModel extends ViewModel {
             return timerRunning.getValue();
         }
         return false;
+    }
+
+    public LiveData<Boolean> getSessionData(){
+        return sessionStarted;
     }
 
     public LiveData<Boolean> getStateData(){

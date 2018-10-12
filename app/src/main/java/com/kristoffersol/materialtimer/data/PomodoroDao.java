@@ -25,10 +25,12 @@ public class PomodoroDao {
 
     private MutableLiveData<String> currTime;
     private MutableLiveData<Boolean> currState;
+    private MutableLiveData<Boolean> sessionStarted;
 
     public PomodoroDao(){
         currTime = new MutableLiveData<>();
         currState = new MutableLiveData<>();
+        sessionStarted = new MutableLiveData<>();
     }
 
     public MutableLiveData<String> getTimeData() {
@@ -53,6 +55,18 @@ public class PomodoroDao {
 
     public Boolean getState(){
         return currState.getValue();
+    }
+
+    public MutableLiveData<Boolean> getSessionStartedData(){
+        return sessionStarted;
+    }
+
+    public void setSessionStarted(Boolean state){
+        sessionStarted.setValue(state);
+    }
+
+    public Boolean getSessionStarted(){
+        return sessionStarted.getValue();
     }
 
 }

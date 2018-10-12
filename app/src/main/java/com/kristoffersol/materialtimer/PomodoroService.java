@@ -131,6 +131,7 @@ public class PomodoroService extends LifecycleService{
 
     private void updateSession(Boolean state){
         session = state;
+        pomodoroRepository.setSessionStartedData(state);
     }
 
     private void handleNotification(){
