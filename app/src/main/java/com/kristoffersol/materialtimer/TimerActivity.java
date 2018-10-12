@@ -21,7 +21,7 @@ package com.kristoffersol.materialtimer;
 
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.databinding.DataBindingUtil;
+import androidx.databinding.DataBindingUtil;
 import android.preference.PreferenceManager;
 import android.os.Bundle;
 
@@ -57,7 +57,7 @@ public class TimerActivity extends BaseActivity implements PomodoroFragment.Pomo
         PreferenceManager.setDefaultValues(this,R.xml.preferences,false);
 
         if(savedInstanceState == null){
-            addFragmentToActivity(getSupportFragmentManager(), R.id.fragment_container, new PomodoroFragment());
+            addFragmentToActivity(getSupportFragmentManager(), R.id.fragment_container, PomodoroFragment.getInstance());
         }
 
         //insures service persists bound lifecycle

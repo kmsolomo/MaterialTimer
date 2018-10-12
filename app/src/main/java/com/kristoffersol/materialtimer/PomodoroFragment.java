@@ -19,39 +19,32 @@
 
 package com.kristoffersol.materialtimer;
 
+import android.os.Bundle;
+import android.os.IBinder;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.content.ServiceConnection;
-import android.databinding.DataBindingUtil;
-import android.os.Bundle;
-import android.os.IBinder;
-import android.os.Message;
-import android.os.RemoteException;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelProviders;
+
 
 import com.kristoffersol.materialtimer.databinding.FragmentTimerBinding;
 import com.kristoffersol.materialtimer.util.InjectorUtils;
 import com.kristoffersol.materialtimer.viewmodel.PomodoroViewModel;
 import com.kristoffersol.materialtimer.viewmodel.PomodoroViewModelFactory;
 
-import java.util.zip.CheckedOutputStream;
 
 public class PomodoroFragment extends Fragment {
 
@@ -127,6 +120,7 @@ public class PomodoroFragment extends Fragment {
         public void onAnimationStart(Animator animator) {
             pomodoroViewModel.setPlayPauseButtonClickable(false);
             pomodoroViewModel.setStopButtonClickable(false);
+            mBinding.playPauseButton.setImageResource(R.drawable.ic_play_arrow_24dp);
         }
         @SuppressLint("RestrictedApi")
         @Override
@@ -158,6 +152,10 @@ public class PomodoroFragment extends Fragment {
         void connectService(ServiceConnection serviceConnection);
         void disconnectService(ServiceConnection connection);
         void publishAction(String action);
+    }
+
+    public static PomodoroFragment getInstance(){
+        return new PomodoroFragment();
     }
 
     @Nullable
@@ -204,7 +202,11 @@ public class PomodoroFragment extends Fragment {
     @Override
     public void onAttach(Context context){
         super.onAttach(context);
-        pomodoroListener = (PomodoroListener) context;
+        try {
+            pomodoroListener = (PomodoroListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(e.toString() + "implement PomodoroListener");
+        }
     }
 
     private void initViewModel() {

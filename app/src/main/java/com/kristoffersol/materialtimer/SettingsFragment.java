@@ -19,37 +19,40 @@
 
 package com.kristoffersol.materialtimer;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
+import androidx.preference.ListPreference;
+import androidx.preference.PreferenceManager;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 
-public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    String themeLight;
-    String themeDark;
-    String themeBlack;
-    OnThemeChangeListener themeChangeListener;
-    SharedPreferences sharedPreferences;
+public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
+
+    private OnThemeChangeListener themeChangeListener;
+    private SharedPreferences sharedPreferences;
 
     public interface OnThemeChangeListener{
         void onThemeChange();
     }
 
+    public static SettingsFragment getInstance(){
+        return new SettingsFragment();
+    }
+
+    @Override
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey){
+        addPreferencesFromResource(R.xml.preferences);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.preferences);
 
-        themeLight = getString(R.string.LightTheme);
-        themeDark = getString(R.string.DarkTheme);
-        themeBlack = getString(R.string.BlackTheme);
-
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
+        if(getContext() != null){
+            sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        }
     }
 
     @Override
@@ -74,17 +77,6 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         }
     }
 
-//    @SuppressWarnings("deprecation")
-//    @Override
-//    public void onAttach(Activity activity){
-//        super.onAttach(activity);
-//        try{
-//            themeChangeListener = (OnThemeChangeListener) activity;
-//        } catch(ClassCastException e) {
-//            throw new ClassCastException(e.toString() + "implement OnThemeChangeListener");
-//        }
-//    }
-
     /**
      * Trigger recreate of activity to create dynamic theme change
      */
@@ -92,6 +84,10 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key){
 
         Preference pref = findPreference(key);
+
+        String themeLight = getResources().getString(R.string.LightTheme);
+        String themeDark = getResources().getString(R.string.DarkTheme);
+        String themeBlack = getResources().getString(R.string.BlackTheme);
 
         if(pref instanceof ListPreference){
             String value = sharedPreferences.getString(key,"");

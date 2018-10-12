@@ -20,7 +20,7 @@
 package com.kristoffersol.materialtimer;
 
 import android.app.Notification;
-import android.arch.lifecycle.LifecycleService;
+import androidx.lifecycle.LifecycleService;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
@@ -46,7 +46,7 @@ public class PomodoroService extends LifecycleService{
 
     private PomodoroRepository pomodoroRepository;
     private PomodoroModel pomodoroModel;
-    private Boolean connected, notification;
+    private Boolean connected, notification, session;
 
     @Override
     public void onCreate(){
@@ -66,6 +66,7 @@ public class PomodoroService extends LifecycleService{
 
         pomodoroModel.getTimer().observe(this, this::routeUpdate);
         pomodoroModel.getState().observe(this, this::updateState);
+        pomodoroModel.getSessionState().observe(this, this::updateSession);
         pomodoroModel.refreshTimers();
     }
 
@@ -110,7 +111,9 @@ public class PomodoroService extends LifecycleService{
     @Override
     public boolean onUnbind(Intent intent){
         connected = false;
-        startNotification();
+        if(session){
+         startNotification();
+        }
         return true;
     }
 
@@ -130,7 +133,10 @@ public class PomodoroService extends LifecycleService{
 
     private void updateState(Boolean state){
         pomodoroRepository.setState(state);
-        Log.i("updateState","repository SAVE STATE");
+    }
+
+    private void updateSession(Boolean state){
+        session = state;
     }
 
     private void handleNotification(){
@@ -158,7 +164,7 @@ public class PomodoroService extends LifecycleService{
      * Start notification when sessions has started and user turns screen off
      */
     private void screenOff(){
-        if(!connected && !notification){
+        if(!connected && !notification && session){
             startNotification();
         }
     }

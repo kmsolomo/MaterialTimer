@@ -19,14 +19,15 @@
 
 package com.kristoffersol.materialtimer.model;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.CountDownTimer;
-import android.preference.PreferenceManager;
 
-import java.util.Timer;
+import android.content.Context;
+import android.os.CountDownTimer;
+import android.content.SharedPreferences;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.preference.PreferenceManager;
+
+import com.kristoffersol.materialtimer.R;
 
 public class PomodoroModel {
 
@@ -36,15 +37,15 @@ public class PomodoroModel {
         LONG_BREAK
     }
 
-    private final String WORK_TIME          = "pref_work_time";
-    private final String BREAK_TIME         = "pref_break_time";
-    private final String LONG_BREAK_TIME    = "pref_long_break_time";
-    private final String LOOP_AMOUT_VALUE   = "pref_loop_amount";
+    private String WORK_TIME;
+    private String BREAK_TIME;
+    private String LONG_BREAK_TIME;
+    private String LOOP_AMOUNT_VALUE;
 
     private MutableLiveData<String> currentTime;
     private MutableLiveData<Boolean> isRunning;
+    private MutableLiveData<Boolean> sessionStart;
     private TimerState currentState;
-    private Boolean sessionStart;
 
     private long milliSecondsLeft,workTime,breakTime,longBreakTime;
     private int sessionBeforeLongBreak,sessionCount;
@@ -54,11 +55,19 @@ public class PomodoroModel {
     public PomodoroModel(Context context){
         currentTime = new MutableLiveData<>();
         isRunning = new MutableLiveData<>();
+        sessionStart = new MutableLiveData<>();
         isRunning.setValue(false);
+        sessionStart.setValue(false);
         currentState = TimerState.WORK;
-        sessionStart = false;
         sessionCount = 0;
         sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        WORK_TIME = context.getResources().getString(R.string.WORK_KEY);
+        BREAK_TIME = context.getResources().getString(R.string.BREAK_KEY);
+        LONG_BREAK_TIME = context.getResources().getString(R.string.LONG_BREAK_KEY);
+        LOOP_AMOUNT_VALUE = context.getResources().getString(R.string.LOOP_KEY);
+
+
     }
 
     public LiveData<String> getTimer(){
@@ -75,6 +84,10 @@ public class PomodoroModel {
 
     public Boolean isRunning(){
         return isRunning.getValue();
+    }
+
+    public LiveData<Boolean> getSessionState(){
+        return sessionStart;
     }
 
     private long convertTime(int value){
@@ -106,13 +119,13 @@ public class PomodoroModel {
         workTime = convertTime(sharedPref.getInt(WORK_TIME,25));
         breakTime = convertTime(sharedPref.getInt(BREAK_TIME,5));
         longBreakTime = convertTime(sharedPref.getInt(LONG_BREAK_TIME,15));
-        sessionBeforeLongBreak = sharedPref.getInt(LOOP_AMOUT_VALUE,4);
+        sessionBeforeLongBreak = sharedPref.getInt(LOOP_AMOUNT_VALUE,4);
         updateTimer(workTime);
     }
 
     public void startTimer(){
-        if(currentState == TimerState.WORK && !sessionStart){
-            sessionStart = true;
+        if(currentState == TimerState.WORK && !sessionStart.getValue()){
+            sessionStart.setValue(true);
             isRunning.setValue(true);
             timer(convertTime(sharedPref.getInt(WORK_TIME,25)));
         } else {
@@ -141,7 +154,7 @@ public class PomodoroModel {
     public void resetTimer(){
         pauseTimer();
         currentState = TimerState.WORK;
-        sessionStart = false;
+        sessionStart.setValue(false);
         refreshTimers();
     }
 
@@ -206,7 +219,7 @@ public class PomodoroModel {
     }
 
     private void restoreTimerState(){
-        sessionStart = sharedPref.getBoolean("sessionStart",false);
+//        sessionStart = sharedPref.getBoolean("sessionStart",false);
 //        customFlag = sharedPref.getBoolean("customFlag",false);
 //        connected = sharedPref.getBoolean("connected",false);
 //        notification = sharedPref.getBoolean("notification",true);
@@ -240,7 +253,7 @@ public class PomodoroModel {
 
     private void saveTimerState(){
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putBoolean("sessionStart",sessionStart);
+//        editor.putBoolean("sessionStart",sessionStart);
 //        editor.putBoolean("customFlag",customFlag);
 //        editor.putBoolean("connected",connected);
 //        editor.putBoolean("notification",notification);

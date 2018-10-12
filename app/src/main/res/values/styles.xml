@@ -70,4 +70,5 @@
         <item name="android:windowReturnTransition">@android:anim/fade_in</item>
     </style>
 
+
 </resources>

@@ -1,9 +1,9 @@
 package com.kristoffersol.materialtimer.viewmodel;
 
 import android.annotation.SuppressLint;
-import android.arch.lifecycle.ViewModel;
-import android.arch.lifecycle.ViewModelProvider;
-import android.support.annotation.NonNull;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.annotation.NonNull;
 
 import com.kristoffersol.materialtimer.data.PomodoroRepository;
 

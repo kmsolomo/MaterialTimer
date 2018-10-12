@@ -21,9 +21,9 @@ package com.kristoffersol.materialtimer;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.kristoffersol.materialtimer.util.NotificationHelper;
 import com.kristoffersol.materialtimer.util.ThemeUtil;

@@ -18,25 +18,31 @@
   ~ along with MaterialTimer.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<PreferenceScreen
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:seekBar="http://schemas.android.com/apk/res-auto">
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:seekBar="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/tools">
 
-    <PreferenceCategory
-        android:title="General">
-        <ListPreference
+    <androidx.preference.PreferenceCategory
+        android:title="General"
+        app:iconSpaceReserved="false">
+
+        <androidx.preference.ListPreference
             android:title="Theme"
             android:summary="%s"
             android:entries="@array/Themes"
             android:entryValues="@array/Themes"
-            android:key="pref_theme_value"
-            android:defaultValue="@string/themeDefaultValue"/>
-    </PreferenceCategory>
+            android:key="@string/THEME_KEY"
+            android:defaultValue="@string/themeDefaultValue"
+            app:iconSpaceReserved="false"/>
 
-    <PreferenceCategory
-        android:title="Timer Profile">
-        <com.pavelsikun.seekbarpreference.SeekBarPreference
-            android:key="pref_work_time"
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.PreferenceCategory
+        android:title="Timer Profile"
+        app:iconSpaceReserved="false">
+
+        <com.pavelsikun.seekbarpreference.SeekBarPreferenceCompat
+            android:key="@string/WORK_KEY"
             android:title="Work Time"
             android:enabled="true"
             android:defaultValue="25"
@@ -46,8 +52,8 @@
             seekBar:msbp_measurementUnit="minutes"
             seekBar:msbp_dialogEnabled="false"/>
 
-        <com.pavelsikun.seekbarpreference.SeekBarPreference
-            android:key="pref_break_time"
+        <com.pavelsikun.seekbarpreference.SeekBarPreferenceCompat
+            android:key="@string/BREAK_KEY"
             android:title="Break Time"
             android:enabled="true"
             android:defaultValue="5"
@@ -57,8 +63,8 @@
             seekBar:msbp_measurementUnit="minutes"
             seekBar:msbp_dialogEnabled="false"/>
 
-        <com.pavelsikun.seekbarpreference.SeekBarPreference
-            android:key="pref_long_break_time"
+        <com.pavelsikun.seekbarpreference.SeekBarPreferenceCompat
+            android:key="@string/LONG_BREAK_KEY"
             android:title="Long Break Time"
             android:enabled="true"
             android:defaultValue="15"
@@ -68,8 +74,8 @@
             seekBar:msbp_measurementUnit="minutes"
             seekBar:msbp_dialogEnabled="false"/>
 
-        <com.pavelsikun.seekbarpreference.SeekBarPreference
-            android:key="pref_loop_amount"
+        <com.pavelsikun.seekbarpreference.SeekBarPreferenceCompat
+            android:key="@string/LOOP_KEY"
             android:title="Sessions Until Long Break"
             android:enabled="true"
             android:defaultValue="4"
@@ -79,14 +85,18 @@
             seekBar:msbp_measurementUnit="sessions"
             seekBar:msbp_dialogEnabled="false"/>
 
-  </PreferenceCategory>
+  </androidx.preference.PreferenceCategory>
 
-    <PreferenceCategory
-        android:title="Sound">
-        <SwitchPreference
+    <androidx.preference.PreferenceCategory
+        android:title="Sound"
+        app:iconSpaceReserved="false">
+
+        <androidx.preference.SwitchPreferenceCompat
             android:title="Vibrate"
-            android:key="pref_vibrate"
-            android:defaultValue="@bool/vibrateDefaultValue"/>
-    </PreferenceCategory>
+            android:key="@string/VIBRATE_KEY"
+            android:defaultValue="@bool/vibrateDefaultValue"
+            app:iconSpaceReserved="false"/>
 
-</PreferenceScreen>
+    </androidx.preference.PreferenceCategory>
+
+</androidx.preference.PreferenceScreen>

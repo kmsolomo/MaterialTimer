@@ -44,4 +44,12 @@
         <item>@string/BlackTheme</item>
     </string-array>
 
+    <!-- Preference Keys -->
+    <string name="WORK_KEY">pref_work_time</string>
+    <string name="BREAK_KEY">pref_break_time</string>
+    <string name="LONG_BREAK_KEY">pref_long_break_time</string>
+    <string name="LOOP_KEY">pref_loop_amount</string>
+    <string name="VIBRATE_KEY">pref_vibrate</string>
+    <string name="THEME_KEY">pref_theme_value</string>
+
 </resources>

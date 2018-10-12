@@ -20,38 +20,38 @@
 package com.kristoffersol.materialtimer;
 
 import android.content.SharedPreferences;
+import androidx.databinding.DataBindingUtil;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.app.Activity;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Toolbar;
 
+import com.kristoffersol.materialtimer.databinding.SettingsBinding;
 import com.kristoffersol.materialtimer.util.ThemeUtil;
 
-public class SettingsActivity extends Activity implements SettingsFragment.OnThemeChangeListener{
 
-    private Toolbar bar;
-    private FragmentManager fragManager;
-    private FragmentTransaction fragTransaction;
-    private SharedPreferences sharedPref;
-    private String themeKey = "pref_theme_value";
-    private String defaultTheme = "Dark";
+public class SettingsActivity extends AppCompatActivity implements SettingsFragment.OnThemeChangeListener{
+
+    private SettingsBinding sBinding;
 
     @Override
-    protected void onCreate(Bundle onSaveInstanceState){
-
+    public void onCreate(Bundle onSaveInstanceState){
         super.onCreate(onSaveInstanceState);
         ThemeUtil.themeCheck(this);
-        setContentView(R.layout.settings);
+        sBinding = DataBindingUtil.setContentView(this, R.layout.settings);
 
-        fragManager = getFragmentManager();
-        fragTransaction = fragManager.beginTransaction();
-        fragTransaction.replace(R.id.fragment_container, new SettingsFragment()).commit();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.settings_fragment_container, SettingsFragment.getInstance())
+                .commit();
+
+        setSupportActionBar(sBinding.toolBar);
+        if(getSupportActionBar() != null){
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         updateUI();
     }
@@ -78,24 +78,18 @@ public class SettingsActivity extends Activity implements SettingsFragment.OnThe
      * Handles UI of toolbar and status bar during theme change
      */
     private void updateUI(){
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        String appTheme = sharedPref.getString(themeKey,defaultTheme);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        String appTheme = sharedPref.getString(getResources().getString(R.string.THEME_KEY),"Dark");
 
         if(appTheme.equals("Light")){
-            bar = findViewById(R.id.toolbar);
-            bar.setTitleTextColor(getResources().getColor(R.color.colorLightPrimary));
-            bar.setBackground(new ColorDrawable(getResources().getColor(R.color.colorAccent)));
-            setActionBar(bar);
-            getActionBar().setDisplayHomeAsUpEnabled(true);
+            sBinding.toolBar.setTitleTextColor(getResources().getColor(R.color.colorLightPrimary));
+            sBinding.toolBar.setBackground(new ColorDrawable(getResources().getColor(R.color.colorAccent)));
 
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
             window.setStatusBarColor(getResources().getColor(R.color.colorAccentDark));
-        } else {
-            bar = findViewById(R.id.toolbar);
-            setActionBar(bar);
-            getActionBar().setDisplayHomeAsUpEnabled(true);
+
         }
     }
 }

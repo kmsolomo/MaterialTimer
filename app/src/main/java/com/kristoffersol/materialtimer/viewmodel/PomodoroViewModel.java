@@ -19,11 +19,10 @@
 
 package com.kristoffersol.materialtimer.viewmodel;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.Transformations;
-import android.arch.lifecycle.ViewModel;
-import android.util.Log;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
+import androidx.lifecycle.ViewModel;
 
 import com.kristoffersol.materialtimer.data.PomodoroRepository;
 
@@ -37,10 +36,7 @@ public class PomodoroViewModel extends ViewModel {
 
     public PomodoroViewModel(PomodoroRepository pomodoroRepository){
         currentTime = Transformations.map(pomodoroRepository.getTimeData(), time -> time);
-        timerRunning = Transformations.map(pomodoroRepository.getStateData(), state -> {
-            Log.i("TransformationsMap","UPDATE VIEWMODEL TIMERSTATE");
-            return state;
-        });
+        timerRunning = Transformations.map(pomodoroRepository.getStateData(), state -> state);
         stopButtonVisibility = new MutableLiveData<>();
         playPauseButtonClickable = new MutableLiveData<>();
         stopButtonClickable = new MutableLiveData<>();

@@ -22,18 +22,8 @@ package com.kristoffersol.materialtimer;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 
 public class TimerReceiver extends BroadcastReceiver {
-
-    private void startService(Context context, Intent intent){
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            //context.startForegroundService(intent);
-            context.startService(intent);
-        } else {
-            context.startService(intent);
-        }
-    }
 
     /**
      * Interface with PomodoroService
@@ -46,22 +36,22 @@ public class TimerReceiver extends BroadcastReceiver {
                 case PomodoroService.ACTION_PAUSE:
                     Intent pauseIntent = new Intent(context, PomodoroService.class);
                     pauseIntent.setAction(PomodoroService.ACTION_PAUSE);
-                    startService(context,pauseIntent);
+                    context.startService(pauseIntent);
                     break;
                 case PomodoroService.ACTION_START:
                     Intent startIntent = new Intent(context, PomodoroService.class);
                     startIntent.setAction(PomodoroService.ACTION_START);
-                    startService(context,startIntent);
+                    context.startService(startIntent);
                     break;
                 case PomodoroService.ACTION_RESET:
                     Intent resetIntent = new Intent(context, PomodoroService.class);
                     resetIntent.setAction(PomodoroService.ACTION_RESET);
-                    startService(context,resetIntent);
+                    context.startService(resetIntent);
                     break;
                 case PomodoroService.ACTION_STOP:
                     Intent stopIntent = new Intent(context, PomodoroService.class);
                     stopIntent.setAction(PomodoroService.ACTION_STOP);
-                    startService(context,stopIntent);
+                    context.startService(stopIntent);
                     break;
             }
         }
