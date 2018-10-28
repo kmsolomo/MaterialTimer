@@ -24,7 +24,9 @@ import com.kristoffersol.materialtimer.data.AppDatabase;
 import com.kristoffersol.materialtimer.data.PomodoroRepository;
 import com.kristoffersol.materialtimer.viewmodel.PomodoroViewModelFactory;
 
-public class InjectorUtils {
+public final class InjectorUtils {
+
+    private InjectorUtils(){}
 
     public static PomodoroViewModelFactory providePomodoroViewModelFactory(){
         PomodoroRepository pomodoroRepository = PomodoroRepository.getInstance(AppDatabase.getInstance().pomodoroDao);
