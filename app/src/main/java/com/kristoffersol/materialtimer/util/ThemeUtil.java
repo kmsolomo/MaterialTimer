@@ -25,7 +25,7 @@ import androidx.preference.PreferenceManager;
 
 import com.kristoffersol.materialtimer.R;
 
-public class ThemeUtil {
+public final class ThemeUtil {
 
     private static final String themeKey = "pref_theme_value";
 

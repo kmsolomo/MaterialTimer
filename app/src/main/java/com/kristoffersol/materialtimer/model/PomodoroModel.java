@@ -19,7 +19,6 @@
 
 package com.kristoffersol.materialtimer.model;
 
-
 import android.content.Context;
 import android.os.Build;
 import android.os.CountDownTimer;
